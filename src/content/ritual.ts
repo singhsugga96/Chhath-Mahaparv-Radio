@@ -282,9 +282,9 @@ export const SECTIONS: readonly RitualSection[] = [
     titleHi: 'शारदा सिन्हा',
     titleEn: 'The voice of Chhath',
     bodyHi:
-      'इस सूची की ज़्यादातर आवाज़ शारदा सिन्हा की है, जिन्हें बिहार कोकिला कहा जाता था।',
+      'इस सूची में सबसे ज़्यादा गाने शारदा सिन्हा के हैं, जिन्हें बिहार कोकिला कहा जाता था।',
     bodyEn:
-      "Most of the voices here are Sharda Sinha's. For decades her Chhath songs played in every house through these four days, from the grinding of the wheat right up to the last arghya. She died on 5 November 2024, the first day of Chhath that year, one day after her final Chhath song came out.",
+      "More of these songs are Sharda Sinha's than anyone else's. For decades her Chhath geet played in every house through these four days, from the grinding of the wheat right up to the last arghya. She died on 5 November 2024, the first day of Chhath that year, one day after her final Chhath song came out.",
     background: [
       {
         label: 'The songs were never written for records',

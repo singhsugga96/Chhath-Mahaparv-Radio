@@ -9,41 +9,29 @@ export interface Track {
 }
 
 /**
- * The rotation, taken from the playlist `PL-HJTkuLZnWxbBolNkLTql6PUUdXgknjX`
- * ("Chaath Songs - Classical").
+ * The rotation, taken from the playlist `PLYO7ixFsIl3M` ("Chhath Puja Radio").
  *
- * Each id was verified against the live YouTube IFrame API: all 23 cued without
+ * Each id was verified against the live YouTube IFrame API: all 14 cued without
  * error code 101 or 150, so none has embedding disabled. Actual playback still
  * requires a real user gesture and is covered by manual smoke testing.
  *
- * `gcVbtUGLDNk` ("Aapka Kya Hoga Janabe Ali", from Housefull) is deliberately
- * excluded — it is a Bollywood item song that appears in the source playlist by
- * accident. One further video was already hidden as unavailable by YouTube.
+ * Order here follows the playlist. Playback shuffles it per visit anyway.
  */
 export const TRACKS: readonly Track[] = [
-  { videoId: 'jRsXRee52xw', title: 'Maarbo Re Sugva Dhanukh Se', artist: 'Anuradha Paudwal' },
-  { videoId: 'WYkrgIZFcZw', title: 'Pahile Pahil Chhathi Maiya', artist: 'Sharda Sinha' },
-  { videoId: '8MzoVsjL4QU', title: 'Uga Hai Suraj Dev', artist: 'Anuradha Paudwal' },
-  { videoId: 'W-w55hqwyUs', title: 'Kaanche Hi Baans Ke Bahangiya', artist: 'T-Series Regional' },
-  { videoId: 'kEJsJ7wn5Zw', title: 'Aadit Manaila', artist: 'T-Series Bhakti Sagar' },
-  { videoId: 'oJ1h2TtZdjw', title: 'Asiya Puran Hoy', artist: 'Kavita Paudwal' },
-  { videoId: 'izIkAY6w8V8', title: 'Patna Ke Haat Par Nariyar', artist: 'T-Series Bhakti Sagar' },
-  { videoId: 'pp0bO8uro64', title: 'Kahawa Paibo Sone Ke Katorwa', artist: 'Anu Dubey' },
-  { videoId: 'knZ8b5YnQiY', title: 'Kelwa Ke Paat Par', artist: 'Sharda Sinha' },
-  { videoId: 'IzDm2ndwWqg', title: 'Angna Mein Pokhri Khonaib', artist: 'Kavita Paudwal' },
-  { videoId: 'N3u5P5PjKQU', title: 'Aragh Ke Ber', artist: 'Anuradha Paudwal' },
-  { videoId: '6v9PSJFCEMo', title: 'Beriya Ke Beri', artist: 'T-Series Bhakti Sagar' },
-  { videoId: 'SocuWpGE2z0', title: 'Darshan Dihi Na Apar Chhathi Maiya', artist: 'Anuradha Paudwal' },
-  { videoId: 'iTffu3kgU7s', title: 'Rakho Sabhe Chhath Ke Barat', artist: 'Kavita Paudwal' },
-  { videoId: 'WsvuH5QO23I', title: 'Kelwa Ke Paat Par', artist: 'Devi' },
-  { videoId: 'O4ARvvmllCA', title: 'Tohe Badka Bhaiya Ho', artist: 'Sharda Sinha' },
-  { videoId: '_RDu847nhmU', title: 'Patna Ke Ghat Par', artist: 'Sharda Sinha' },
-  { videoId: 'sH1bqkui-pA', title: 'Ho Dinanath', artist: 'T-Series Regional' },
-  { videoId: '_ngNpxnA5hY', title: 'Kahele Mahadev Kari Haath Jodiya', artist: 'Pawan Singh' },
-  { videoId: 'FIGYq0dsqQM', title: 'Chaar Hi Kunava Ke', artist: 'T-Series Regional' },
-  { videoId: 'bL6rp6eI_2k', title: 'Chhath Ke Baratiya', artist: 'Sharda Sinha' },
+  { videoId: '6e6Hp6R5SVU', title: 'Uga Hai Suraj Dev', artist: 'Anuradha Paudwal' },
+  { videoId: 'j9G3caThH98', title: 'Uthau Suruj Bhaile Bihaan', artist: 'Sharda Sinha' },
+  { videoId: '7R9tDvnAfMo', title: 'Kaanch Hi Baans Ke Bahangiya', artist: 'Arvind Akela Kallu' },
+  { videoId: 'FGQ0SCK1AtE', title: 'Ugi He Dinanath', artist: 'Kalpana' },
+  { videoId: 'yC_qL0a_P7o', title: 'Sawa Lakh Ke Saari Bhije', artist: 'Anu Dubey' },
   { videoId: 'fOVGz9WFymU', title: 'Ho Deenanath', artist: 'Sharda Sinha' },
-  { videoId: '3ViLjNee1o0', title: 'Ho Deenanath (alternate)', artist: 'Sharda Sinha' },
+  { videoId: 'YVrZBmI9_ag', title: 'Kopi Kopi Boleli', artist: 'Devi' },
+  { videoId: 'WsvuH5QO23I', title: 'Kelwa Ke Paat Par', artist: 'Devi' },
+  { videoId: 'cQ2eX4SrkNg', title: 'Pahile Pahile Baani Kaile Chhathi Maiya', artist: 'Dinesh Lal Yadav' },
+  { videoId: 'BKoD7bTLc2k', title: 'Jode Jode Falwa', artist: 'Pawan Singh' },
+  { videoId: 'kEJsJ7wn5Zw', title: 'Aadit Manaila', artist: 'T-Series Bhakti Sagar' },
+  { videoId: 'izIkAY6w8V8', title: 'Patna Ke Haat Par Nariyar', artist: 'T-Series Bhakti Sagar' },
+  { videoId: 'knZ8b5YnQiY', title: 'Kelwa Ke Paat Par', artist: 'Sharda Sinha' },
+  { videoId: 'bL6rp6eI_2k', title: 'Chhath Ke Baratiya', artist: 'Sharda Sinha' },
 ];
 
 /**

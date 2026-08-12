@@ -10,8 +10,8 @@ const seeded = (values: readonly number[]): (() => number) => {
 const track = (id: string): Track => ({ videoId: id, title: id, artist: 'a' });
 
 describe('TRACKS', () => {
-  it('holds the 23 verified Chhath tracks', () => {
-    expect(TRACKS).toHaveLength(23);
+  it('holds the 14 verified tracks from the Chhath Puja Radio playlist', () => {
+    expect(TRACKS).toHaveLength(14);
   });
 
   it('has no duplicate video ids', () => {
@@ -24,15 +24,21 @@ describe('TRACKS', () => {
     }
   });
 
-  it('never includes the Bollywood item song from the source playlist', () => {
-    expect(TRACKS.map((t) => t.videoId)).not.toContain('gcVbtUGLDNk');
-  });
-
   it('gives every track a title and an artist', () => {
     for (const t of TRACKS) {
       expect(t.title.trim()).not.toBe('');
       expect(t.artist.trim()).not.toBe('');
     }
+  });
+
+  /*
+   * Two different recordings of Kelwa Ke Paat Par are in the rotation, by Devi
+   * and by Sharda Sinha. Sharing a title is fine, but the artist has to
+   * distinguish them or the now-playing bar looks like it is stuck.
+   */
+  it('never shows the same title and artist twice', () => {
+    const labels = TRACKS.map((t) => `${t.title} / ${t.artist}`);
+    expect(new Set(labels).size).toBe(labels.length);
   });
 });
 

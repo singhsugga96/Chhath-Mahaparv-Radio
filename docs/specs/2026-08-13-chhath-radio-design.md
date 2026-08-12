@@ -495,19 +495,21 @@ server-rendered HTML. Audio and the animated sky are both enhancements.
 
 ## Playlist
 
-Source: `Chaath Songs - Classical`
-(`PL-HJTkuLZnWxbBolNkLTql6PUUdXgknjX`) — 25 videos, 1 hidden as unavailable, 24
-extracted.
+Source: `Chhath Puja Radio` (`PLYO7ixFsIl3M`), 14 videos, all Chhath geet.
 
-**23 tracks will be used.** Item 24, `gcVbtUGLDNk` — "Aapka Kya Hoga Janabe Ali"
-from *Housefull* — is a Bollywood item song, not a Chhath geet, and is excluded
-as an evident accident in the source playlist.
+This replaced an earlier playlist (`PL-HJTkuLZnWxbBolNkLTql6PUUdXgknjX`, "Chaath
+Songs - Classical") which had 25 entries, one hidden by YouTube and one Bollywood
+item song that had wandered in. Six ids carry over between the two.
 
-Extracted ids are recorded and each **must be verified to actually play in an
-embed** before shipping. YouTube Music art tracks are frequently
-embedding-disabled, and this is the single most likely reason a finished build
-would be silent. Ids that fail are reported so alternate uploads of the same song
-can be substituted.
+**Every id must be verified to actually load in an embed before shipping.**
+YouTube tracks are frequently embedding-disabled, and that is the single most
+likely reason a finished build would be silent. All 14 were driven through the
+live IFrame API and cued without error code 101 or 150. Ids that fail are
+reported so an alternate upload of the same song can be substituted.
+
+Sharda Sinha has the largest share of the rotation at four of fourteen, which is
+what the credits section claims and needs rechecking if the playlist changes
+again.
 
 ## Testing
 
