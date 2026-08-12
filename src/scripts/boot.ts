@@ -1,3 +1,4 @@
+import { chhathStatus, splitDuration } from '../lib/chhath';
 import { formatTime } from '../lib/format';
 import { STAGES, narrativeMinutes } from '../lib/narrative';
 import { TRACKS, type Track } from '../lib/playlist';
@@ -173,6 +174,88 @@ dots.forEach((dot) => {
 });
 
 /* --- Player -------------------------------------------------------------- */
+
+/* --- Countdown to the next Chhath ---------------------------------------- */
+
+/** Hindi names for the four days, indexed to match DAY_IDS. */
+const DAY_NAMES = ['नहाय खाय', 'खरना', 'संध्या अर्घ्य', 'उषा अर्घ्य'] as const;
+
+/**
+ * Fills the opening screen's countdown and keeps it ticking.
+ *
+ * Runs entirely on the client because which festival is "next" depends on when
+ * the page is viewed, and this is a static build. If the tabulated dates have
+ * run out the widget simply stays hidden rather than showing a guess.
+ */
+function startCountdown(): void {
+  const root = document.getElementById('countdown');
+  if (!root) return;
+
+  const labelEl = document.getElementById('countdown-label');
+  const datesEl = document.getElementById('countdown-dates');
+  const summaryEl = document.getElementById('countdown-summary');
+  const fields = {
+    days: document.getElementById('cd-days'),
+    hours: document.getElementById('cd-hours'),
+    minutes: document.getElementById('cd-minutes'),
+    seconds: document.getElementById('cd-seconds'),
+  };
+
+  /** Formats the festival's date span in Hindi, in IST. */
+  const formatSpan = (days: readonly number[]): string => {
+    const opts: Intl.DateTimeFormatOptions = {
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'Asia/Kolkata',
+    };
+    const first = new Intl.DateTimeFormat('hi-IN', opts).format(new Date(days[0]!));
+    const last = new Intl.DateTimeFormat('hi-IN', { ...opts, year: 'numeric' }).format(
+      new Date(days[3]!),
+    );
+    return `${first} – ${last}`;
+  };
+
+  const tick = (): void => {
+    const status = chhathStatus(new Date());
+
+    if (status.kind === 'unknown') {
+      root.hidden = true;
+      return;
+    }
+
+    root.hidden = false;
+
+    if (status.kind === 'during') {
+      root.classList.add('is-live');
+      const name = DAY_NAMES[status.dayIndex] ?? '';
+      if (labelEl) labelEl.textContent = `आज ${name} है`;
+      if (datesEl) datesEl.textContent = formatSpan(status.days);
+      if (summaryEl) summaryEl.textContent = `Chhath Puja is being observed today: ${name}.`;
+      return;
+    }
+
+    root.classList.remove('is-live');
+    if (labelEl) labelEl.textContent = 'अगली छठ पूजा';
+
+    const c = splitDuration(status.msRemaining);
+    if (fields.days) fields.days.textContent = String(c.days);
+    if (fields.hours) fields.hours.textContent = String(c.hours).padStart(2, '0');
+    if (fields.minutes) fields.minutes.textContent = String(c.minutes).padStart(2, '0');
+    if (fields.seconds) fields.seconds.textContent = String(c.seconds).padStart(2, '0');
+
+    if (datesEl) datesEl.textContent = formatSpan(status.days);
+    if (summaryEl) {
+      summaryEl.textContent = `Next Chhath Puja begins in ${c.days} days, on ${formatSpan(status.days)}.`;
+    }
+  };
+
+  tick();
+  window.setInterval(tick, 1000);
+}
+
+startCountdown();
+
+/* --- Player --------------------------------------------------------------- */
 
 const bar = document.querySelector<HTMLElement>('.player');
 const titleEl = document.getElementById('track-title');

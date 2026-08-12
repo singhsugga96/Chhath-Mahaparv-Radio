@@ -141,6 +141,44 @@ Title, one-line framing, and the tap target that starts audio.
 > छठ पूजा — सूर्य को अर्घ्य, चार दिन का महापर्व
 > A four-day festival to the sun. Scroll to walk through it.
 
+The intro also carries the **countdown widget** (see below).
+
+### Countdown to the next Chhath
+
+A frosted card on the opening screen showing days, hours, minutes and seconds
+until the next festival, with its date span beneath.
+
+Chhath is lunisolar — Kartik Shukla Shashthi — so the dates **cannot be computed**
+from the Gregorian calendar and are tabulated in `lib/chhath.ts`. Only the
+Shashthi (Sandhya Arghya) date is stored per year; the other three days are
+consecutive around it, derived as −2, −1, 0, +1. Verified entries:
+
+| Year | Shashthi | Festival runs |
+|---|---|---|
+| 2026 | 15 November | 13–16 November |
+| 2027 | 4 November | 2–5 November |
+
+Behaviour:
+
+- **Before** a festival: counts down to 00:00 IST on Nahay Khay.
+- **During**: the units are replaced by the day's name — "आज खरना है".
+- **After** the last day: rolls to the following year automatically.
+- **Past the final tabulated year**: reports `unknown` and the widget **hides
+  itself**. It does not extrapolate a lunisolar date it cannot know. Adding a
+  year is a one-line change.
+
+Deliberately **not** counting down to precise arghya moments: those follow local
+sunset and sunrise, and publishing per-minute times would be inventing precision.
+The target is the start of the festival in IST.
+
+It runs entirely client-side. The site is a static build, so which festival is
+"next" depends on when the page is *viewed*, not when it was built — a
+server-rendered value would go stale.
+
+The ticking numbers are `aria-hidden`, since a per-second live region is
+unusable with a screen reader; a visually hidden line states the same
+information once. Figures are tabular so the seconds do not jitter the layout.
+
 ### 1. तैयारी — Preparation
 
 Before the four days begin: the house is cleaned thoroughly, wheat is washed,
@@ -419,6 +457,10 @@ Vitest against the pure modules:
   which is the property that makes uneven stage spacing safe
 - `playlist.ts` — shuffle is a permutation that never drops or duplicates, is
   deterministic for a given rand, and dead ids are excluded
+- `chhath.ts` — the four days derive correctly from Shashthi including across a
+  month boundary, the status switches to `during` at the exact moment the
+  festival begins, rolls to the next year once it ends, reports `unknown` past
+  the last tabulated year, and never returns a negative countdown
 - `format.ts` — `m:ss` under an hour and `h:mm:ss` above, fractions truncate, and
   NaN or Infinity collapse to `0:00` rather than rendering "NaN:NaN" into the bar
   (YouTube reports NaN duration before metadata arrives)

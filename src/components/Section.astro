@@ -1,10 +1,11 @@
 ---
 import type { RitualSection } from '../content/ritual';
+import Countdown from './Countdown.astro';
 
 interface Props {
   /** The section to render. */
   section: RitualSection;
-  /** True for the intro, which is styled as a title card without a scrim. */
+  /** True for the intro, which is styled as a title card and carries the countdown. */
   isIntro?: boolean;
 }
 
@@ -38,6 +39,8 @@ const { section, isIntro = false } = Astro.props;
         </ul>
       )
     }
+
+    {isIntro && <Countdown />}
 
     {section.note && <p class="section__note">{section.note}</p>}
   </div>

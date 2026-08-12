@@ -1,0 +1,43 @@
+---
+/**
+ * Countdown to the next Chhath Puja, shown on the opening screen.
+ *
+ * Rendered as an empty shell and filled by boot.ts, because which festival is
+ * "next" depends on when the page is *viewed*, not when it was built — and this
+ * is a static site, so a build-time value would go stale.
+ *
+ * Hidden by default and revealed once a date resolves, so it never flashes
+ * placeholder dashes and never shows anything if the dates have run out.
+ */
+---
+
+<div class="countdown" id="countdown" hidden>
+  <p class="countdown__label" id="countdown-label">अगली छठ पूजा</p>
+
+  <!--
+    The ticking numbers are hidden from assistive tech: an aria-live region
+    updating every second would be unusable. The sr-only line below carries the
+    same information, stated once.
+  -->
+  <div class="countdown__units" id="countdown-units" aria-hidden="true">
+    <div class="countdown__unit">
+      <span class="countdown__value" id="cd-days">--</span>
+      <span class="countdown__name">दिन</span>
+    </div>
+    <div class="countdown__unit">
+      <span class="countdown__value" id="cd-hours">--</span>
+      <span class="countdown__name">घंटे</span>
+    </div>
+    <div class="countdown__unit">
+      <span class="countdown__value" id="cd-minutes">--</span>
+      <span class="countdown__name">मिनट</span>
+    </div>
+    <div class="countdown__unit">
+      <span class="countdown__value" id="cd-seconds">--</span>
+      <span class="countdown__name">सेकंड</span>
+    </div>
+  </div>
+
+  <p class="countdown__dates" id="countdown-dates"></p>
+  <p class="sr-only" id="countdown-summary"></p>
+</div>
