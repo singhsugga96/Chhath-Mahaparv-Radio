@@ -1,0 +1,22 @@
+---
+/**
+ * The persistent now-playing bar.
+ *
+ * Lives outside the scrolling sections and is never re-mounted, so scrolling the
+ * whole page does not interrupt playback. The player mount is a 200x200 square
+ * that the YouTube iframe replaces, making the video itself the artwork tile —
+ * visible and unobscured, as YouTube's terms require.
+ */
+---
+
+<section class="player" aria-label="Now playing">
+  <div class="player__mount" id="player-mount"></div>
+  <div class="player__meta">
+    <h2 class="player__title" id="track-title" aria-live="polite">संगीत तैयार है</h2>
+    <p class="player__artist" id="track-artist"></p>
+    <div class="player__controls" id="player-controls">
+      <button class="control" id="btn-toggle" type="button" aria-label="Pause">❙❙</button>
+      <button class="control" id="btn-next" type="button" aria-label="Next track">▶❙</button>
+    </div>
+  </div>
+</section>

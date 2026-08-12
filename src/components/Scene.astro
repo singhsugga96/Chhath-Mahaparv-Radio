@@ -1,0 +1,227 @@
+---
+/**
+ * The ghat scene: a gradient sky, a sun/moon disc on its arc, the far bank,
+ * the river, ghat steps, figures standing in the water offering arghya, the
+ * soop and daura, floating diyas, and the Kosi Bharai sugarcane canopy.
+ *
+ * Server-rendered once and fixed behind the sections. This component holds
+ * shape only — every color comes from a CSS custom property that boot.ts drives
+ * from the scroll position. No color values and no timing live here.
+ */
+---
+
+<svg
+  class="scene"
+  viewBox="0 0 1600 900"
+  preserveAspectRatio="xMidYMid slice"
+  aria-hidden="true"
+  focusable="false"
+>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--sky-top)"></stop>
+      <stop offset="72%" stop-color="var(--sky-horizon)"></stop>
+    </linearGradient>
+
+    <!-- Far water catches the horizon light; near water darkens with depth, so
+         the river reads as receding rather than as one flat field. -->
+    <linearGradient id="river" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--sky-horizon)" stop-opacity="0.72"></stop>
+      <stop offset="16%" stop-color="var(--water)"></stop>
+      <stop offset="100%" stop-color="var(--ink)" stop-opacity="0.55"></stop>
+    </linearGradient>
+
+    <!-- Horizontal ripple bands, faint, to break up the surface. -->
+    <linearGradient id="ripple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.07"></stop>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"></stop>
+    </linearGradient>
+
+    <radialGradient id="halo">
+      <stop offset="0%" stop-color="rgb(var(--disc-halo) / 0.5)"></stop>
+      <stop offset="100%" stop-color="rgb(var(--disc-halo) / 0)"></stop>
+    </radialGradient>
+
+    <radialGradient id="diyaGlow">
+      <stop offset="0%" stop-color="rgb(255 176 71 / 0.85)"></stop>
+      <stop offset="100%" stop-color="rgb(255 176 71 / 0)"></stop>
+    </radialGradient>
+
+    <!-- The reflection column fades out downwards and at both edges, so it
+         reads as light on water rather than a pasted rectangle. -->
+    <linearGradient id="reflectionFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgb(var(--disc-halo) / 0.3)"></stop>
+      <stop offset="60%" stop-color="rgb(var(--disc-halo) / 0.08)"></stop>
+      <stop offset="100%" stop-color="rgb(var(--disc-halo) / 0)"></stop>
+    </linearGradient>
+
+    <linearGradient id="reflectionEdges" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#000"></stop>
+      <stop offset="50%" stop-color="#fff"></stop>
+      <stop offset="100%" stop-color="#000"></stop>
+    </linearGradient>
+
+    <mask id="reflectionMask" maskContentUnits="objectBoundingBox">
+      <rect width="1" height="1" fill="url(#reflectionEdges)"></rect>
+    </mask>
+  </defs>
+
+  <!-- Sky -->
+  <rect width="1600" height="558" fill="url(#sky)"></rect>
+
+  <!-- Sun or moon. boot.ts sets the transform from discAt(). -->
+  <g class="disc" id="disc">
+    <circle r="150" fill="url(#halo)"></circle>
+    <circle r="34" fill="var(--disc-color)"></circle>
+  </g>
+
+  <!-- Far bank: a low silhouette of the opposite shore -->
+  <path
+    d="M0 540 L120 528 L210 534 L300 520 L420 532 L520 522 L640 534 L760 524
+       L900 536 L1020 526 L1140 534 L1260 522 L1380 532 L1500 526 L1600 534
+       L1600 558 L0 558 Z"
+    fill="var(--ink)"
+  ></path>
+
+  <!--
+    Opaque on purpose. At 55% the bank tinted the sun grey instead of hiding it,
+    because the disc's upper half sits inside this band at the arghya moments.
+    Opaque makes the sun properly sink behind the far shore.
+  -->
+
+  <!-- Temple spires on the far bank -->
+  <path d="M352 522 L368 468 L384 522 Z" fill="var(--ink)"></path>
+  <path d="M1188 528 L1206 462 L1224 528 Z" fill="var(--ink)"></path>
+
+  <!-- River -->
+  <rect y="558" width="1600" height="342" fill="url(#river)"></rect>
+
+  <!-- Ripple bands: wide, flat ellipses that suggest a surface without motion -->
+  <g fill="url(#ripple)">
+    <ellipse cx="700" cy="592" rx="760" ry="7"></ellipse>
+    <ellipse cx="900" cy="628" rx="640" ry="8"></ellipse>
+    <ellipse cx="560" cy="672" rx="700" ry="9"></ellipse>
+    <ellipse cx="1000" cy="734" rx="580" ry="10"></ellipse>
+    <ellipse cx="640" cy="806" rx="660" ry="11"></ellipse>
+  </g>
+
+  <!-- Reflection column beneath the disc. boot.ts sets its x. -->
+  <rect
+    id="reflection"
+    y="558"
+    width="160"
+    height="342"
+    fill="url(#reflectionFade)"
+    mask="url(#reflectionMask)"
+  ></rect>
+
+  <!-- Ghat steps, right bank, receding into the water -->
+  <g fill="var(--ink)">
+    <rect x="1180" y="612" width="420" height="26"></rect>
+    <rect x="1240" y="638" width="360" height="26"></rect>
+    <rect x="1300" y="664" width="300" height="26"></rect>
+    <rect x="1360" y="690" width="240" height="210"></rect>
+  </g>
+
+  <!-- Ghat steps, left bank -->
+  <g fill="var(--ink)">
+    <rect x="0" y="628" width="300" height="24"></rect>
+    <rect x="0" y="652" width="240" height="24"></rect>
+    <rect x="0" y="676" width="180" height="224"></rect>
+  </g>
+
+  <!--
+    Figures standing in the water offering arghya: torso, head, raised arms,
+    and the soop held above. Deliberately simple silhouettes.
+  -->
+  <g fill="var(--ink)">
+    <g transform="translate(560 604)">
+      <circle cx="0" cy="-52" r="13"></circle>
+      <path d="M-16 -38 Q0 -44 16 -38 L22 44 L-22 44 Z"></path>
+      <path d="M-16 -30 L-30 -60 L-24 -64 L-8 -36 Z"></path>
+      <path d="M16 -30 L30 -60 L24 -64 L8 -36 Z"></path>
+      <ellipse cx="0" cy="-68" rx="26" ry="7"></ellipse>
+    </g>
+    <g transform="translate(668 616)">
+      <circle cx="0" cy="-48" r="12"></circle>
+      <path d="M-15 -35 Q0 -41 15 -35 L20 40 L-20 40 Z"></path>
+      <path d="M-15 -28 L-27 -55 L-21 -59 L-7 -33 Z"></path>
+      <path d="M15 -28 L27 -55 L21 -59 L7 -33 Z"></path>
+      <ellipse cx="0" cy="-62" rx="24" ry="6"></ellipse>
+    </g>
+    <g transform="translate(452 594)">
+      <circle cx="0" cy="-42" r="10"></circle>
+      <path d="M-13 -31 Q0 -36 13 -31 L17 34 L-17 34 Z"></path>
+      <ellipse cx="0" cy="-54" rx="20" ry="5"></ellipse>
+    </g>
+  </g>
+
+  <!-- Soop and daura resting on the left ghat steps -->
+  <g fill="var(--ink)">
+    <!-- Daura: the large carrying basket -->
+    <path d="M196 640 L268 640 L260 676 L204 676 Z"></path>
+    <rect x="192" y="634" width="80" height="8" rx="4"></rect>
+    <!-- Soop: the flat winnowing tray, leaning against it -->
+    <ellipse cx="300" cy="654" rx="34" ry="9" transform="rotate(-24 300 654)"></ellipse>
+  </g>
+
+  <!--
+    Kosi Bharai: five sugarcane stalks tied into a canopy with lamps beneath.
+    Faded in only around its own section, via --kosi. This is the one element
+    tied to a section rather than to the time of day, because the rite is.
+  -->
+  <g class="kosi">
+    <g stroke="var(--ink)" stroke-width="7" stroke-linecap="round" fill="none">
+      <path d="M840 720 L862 520"></path>
+      <path d="M884 722 L878 518"></path>
+      <path d="M928 722 L896 520"></path>
+      <path d="M796 720 L846 522"></path>
+      <path d="M960 718 L910 524"></path>
+    </g>
+    <!-- The tie at the apex -->
+    <ellipse cx="878" cy="518" rx="30" ry="9" fill="var(--ink)"></ellipse>
+    <!-- Lamps beneath the canopy -->
+    <g>
+      <g class="diya" style="animation-delay: 0.1s">
+        <circle cx="838" cy="702" r="26" fill="url(#diyaGlow)"></circle>
+        <circle cx="838" cy="702" r="3.5" fill="#ffd9a0"></circle>
+      </g>
+      <g class="diya" style="animation-delay: 0.9s">
+        <circle cx="878" cy="710" r="26" fill="url(#diyaGlow)"></circle>
+        <circle cx="878" cy="710" r="3.5" fill="#ffd9a0"></circle>
+      </g>
+      <g class="diya" style="animation-delay: 1.6s">
+        <circle cx="918" cy="702" r="26" fill="url(#diyaGlow)"></circle>
+        <circle cx="918" cy="702" r="3.5" fill="#ffd9a0"></circle>
+      </g>
+    </g>
+  </g>
+
+  <!-- Diyas floating on the water. Group opacity is driven by --diya-glow. -->
+  <g class="diyas">
+    <g class="diya" style="animation-delay: 0s">
+      <circle cx="300" cy="700" r="30" fill="url(#diyaGlow)"></circle>
+      <circle cx="300" cy="700" r="4" fill="#ffd9a0"></circle>
+    </g>
+    <g class="diya" style="animation-delay: 0.7s">
+      <circle cx="420" cy="756" r="26" fill="url(#diyaGlow)"></circle>
+      <circle cx="420" cy="756" r="3.5" fill="#ffd9a0"></circle>
+    </g>
+    <g class="diya" style="animation-delay: 1.4s">
+      <circle cx="760" cy="784" r="28" fill="url(#diyaGlow)"></circle>
+      <circle cx="760" cy="784" r="4" fill="#ffd9a0"></circle>
+    </g>
+    <g class="diya" style="animation-delay: 2.1s">
+      <circle cx="1000" cy="812" r="24" fill="url(#diyaGlow)"></circle>
+      <circle cx="1000" cy="812" r="3.5" fill="#ffd9a0"></circle>
+    </g>
+    <g class="diya" style="animation-delay: 0.35s">
+      <circle cx="1140" cy="742" r="26" fill="url(#diyaGlow)"></circle>
+      <circle cx="1140" cy="742" r="3.5" fill="#ffd9a0"></circle>
+    </g>
+    <g class="diya" style="animation-delay: 1.75s">
+      <circle cx="600" cy="846" r="22" fill="url(#diyaGlow)"></circle>
+      <circle cx="600" cy="846" r="3" fill="#ffd9a0"></circle>
+    </g>
+  </g>
+</svg>

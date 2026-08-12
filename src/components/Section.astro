@@ -1,0 +1,44 @@
+---
+import type { RitualSection } from '../content/ritual';
+
+interface Props {
+  /** The section to render. */
+  section: RitualSection;
+  /** True for the intro, which is styled as a title card without a scrim. */
+  isIntro?: boolean;
+}
+
+const { section, isIntro = false } = Astro.props;
+---
+
+<section
+  class:list={['section', { 'section--intro': isIntro }]}
+  id={section.id}
+  data-stage={section.id}
+  aria-labelledby={`${section.id}-title`}
+>
+  <div class="section__inner">
+    {section.day && <p class="section__day">{section.day}</p>}
+
+    <h2 class="section__title" id={`${section.id}-title`}>{section.titleHi}</h2>
+    <p class="section__subtitle">{section.titleEn}</p>
+
+    <p class="section__body-hi">{section.bodyHi}</p>
+    <p class="section__body-en">{section.bodyEn}</p>
+
+    {
+      section.items && (
+        <ul class="items">
+          {section.items.map((item) => (
+            <li>
+              <span class="items__label">{item.label}</span>
+              <span class="items__note"> — {item.note}</span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    {section.note && <p class="section__note">{section.note}</p>}
+  </div>
+</section>

@@ -14,8 +14,9 @@
   },
   "license": "ISC",
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
     "astro": "^7.2.1",
-    "typescript": "^7.0.2",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   }
 }

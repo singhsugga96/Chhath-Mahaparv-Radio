@@ -1,0 +1,64 @@
+---
+import EntryGate from '../components/EntryGate.astro';
+import Player from '../components/Player.astro';
+import Scene from '../components/Scene.astro';
+import Section from '../components/Section.astro';
+import { SECTIONS } from '../content/ritual';
+import '../styles/global.css';
+
+const title = 'छठ पूजा · Chhath Puja — how it is done';
+const description =
+  'A scrolling guide to Chhath Puja: the preparation, the four days, the prasad, and what makes it unlike any other festival — with the sky moving from pre-dawn to the closing sunrise as you read.';
+---
+
+<!doctype html>
+<html lang="hi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="dark" />
+    <link rel="preconnect" href="https://www.youtube.com" />
+    <link rel="preconnect" href="https://i.ytimg.com" />
+  </head>
+  <body>
+    <h1 class="sr-only">{title}</h1>
+
+    <Scene />
+
+    <main class="journey">
+      {
+        SECTIONS.map((section, i) => (
+          <Section section={section} isIntro={i === 0} />
+        ))
+      }
+    </main>
+
+    <!-- Jump-to-section rail. Hidden on narrow viewports. -->
+    <nav aria-label="Sections">
+      <ul class="rail">
+        {
+          SECTIONS.map((section, i) => (
+            <li>
+              <button
+                class="rail__dot"
+                type="button"
+                data-target={section.id}
+                aria-current={i === 0 ? 'true' : 'false'}
+                aria-label={`${section.titleEn} — ${section.titleHi}`}
+              />
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <Player />
+    <EntryGate />
+
+    <script>
+      import '../scripts/boot';
+    </script>
+  </body>
+</html>
