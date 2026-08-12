@@ -365,6 +365,37 @@ the arghya figures were first drawn there and read as featureless tree trunks.
 Figures therefore stand below y 600, silhouetted against the lit water. Only
 light or rising elements (smoke, the canopy apex) belong in that band.
 
+### Idle auto-scroll
+
+If nobody scrolls for **20 seconds after the gate is dismissed**, the page starts
+walking itself down at **26 px per second**. A section is roughly a viewport
+tall, so that is about half a minute per rite: reading pace, not a tour bus. The
+point is to make it obvious that the sky is tied to the scroll.
+
+A small hint appears while it runs, saying the page is moving on its own and that
+touching it takes over. Without that, a page that starts scrolling by itself
+reads as a glitch.
+
+Rules that make it tolerable rather than hostile:
+
+- **Never runs under `prefers-reduced-motion`.** Unrequested scrolling is exactly
+  the motion that setting exists to prevent, so the whole feature is skipped.
+- **Never runs before the reader has started.** Arming is gated on a `started`
+  flag set when the gate is dismissed. Without it the `visibilitychange` handler
+  arms the timer on page load and the page scrolls behind the entry veil.
+- **Any hint of a real user stops it instantly** and re-arms the 20 second wait.
+  It listens for `wheel`, `touchstart`, `keydown` and `pointerdown`, **not** for
+  `scroll`: the loop's own `scrollTo` fires scroll events, so listening for those
+  would make it cancel itself on the first frame.
+- Stops at the bottom of the page, and while the tab is hidden.
+
+**`behavior: 'instant'` is required, not stylistic.** The page sets
+`scroll-behavior: smooth`, so a default `scrollTo` starts its own easing
+animation and fights the loop, which is already doing the animating. This also
+explains a puzzle seen during development: `window.scrollTo(0, y)` appeared inert
+in a headless pane, because smooth scrolling is driven by rAF and rAF is
+suspended while the document is hidden.
+
 ### Ambient motion
 
 The scene should never be completely frozen, but nothing should pull the eye.

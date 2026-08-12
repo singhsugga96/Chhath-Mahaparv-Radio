@@ -174,6 +174,138 @@ dots.forEach((dot) => {
   });
 });
 
+/* --- Idle auto-scroll ----------------------------------------------------- */
+
+/** How long the reader must sit still before the page starts moving itself. */
+const IDLE_BEFORE_AUTOSCROLL = 20_000;
+
+/**
+ * Auto-scroll speed in CSS pixels per second.
+ *
+ * Slow on purpose. A section is roughly a viewport tall, so this gives about
+ * half a minute per rite, which is reading pace rather than a tour bus.
+ */
+const AUTO_SCROLL_SPEED = 26;
+
+/**
+ * After the journey starts, if nobody scrolls for twenty seconds, walk the page
+ * down slowly so it is obvious the sky is tied to the scroll. Any hint of a real
+ * user taking over stops it immediately and re-arms the wait.
+ *
+ * Never runs under prefers-reduced-motion: unrequested scrolling is precisely
+ * the motion that setting exists to prevent.
+ *
+ * @returns A function that arms the idle timer.
+ */
+function createAutoScroll(): () => void {
+  if (reduceMotion) return () => {};
+
+  let idleTimer = 0;
+  let rafId = 0;
+  let lastTs = 0;
+  let position = 0;
+  let running = false;
+  /*
+   * Nothing may arm the idle timer until the reader has actually started the
+   * journey by dismissing the gate. Without this, the visibilitychange handler
+   * below arms it on page load, and the page can start scrolling itself behind
+   * the entry veil before anyone has pressed anything.
+   */
+  let started = false;
+
+  const maxScroll = (): number =>
+    document.documentElement.scrollHeight - window.innerHeight;
+
+  const atBottom = (): boolean => window.scrollY >= maxScroll() - 2;
+
+  const hint = document.getElementById('autoscroll-hint');
+
+  const stop = (): void => {
+    running = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = 0;
+    if (hint) hint.hidden = true;
+  };
+
+  const step = (ts: number): void => {
+    if (!running) return;
+    if (lastTs === 0) lastTs = ts;
+    position += (AUTO_SCROLL_SPEED * (ts - lastTs)) / 1000;
+    lastTs = ts;
+
+    /*
+     * behavior:'instant' is essential. The page sets scroll-behavior:smooth, so
+     * a default scrollTo would start its own easing animation and fight this
+     * loop, which is already doing the animating.
+     */
+    window.scrollTo({ top: position, behavior: 'instant' });
+
+    if (atBottom()) {
+      stop();
+      return;
+    }
+    rafId = requestAnimationFrame(step);
+  };
+
+  const begin = (): void => {
+    if (running || atBottom()) return;
+    running = true;
+    lastTs = 0;
+    // Resync to wherever the reader actually left the page.
+    position = window.scrollY;
+    if (hint) hint.hidden = false;
+    rafId = requestAnimationFrame(step);
+  };
+
+  const arm = (): void => {
+    if (!started) return;
+    window.clearTimeout(idleTimer);
+    idleTimer = window.setTimeout(begin, IDLE_BEFORE_AUTOSCROLL);
+  };
+
+  /*
+   * Listen for intent, not for 'scroll'. Our own scrollTo fires scroll events,
+   * so using those would make the loop cancel itself on its first frame.
+   */
+  const takeOver = (): void => {
+    stop();
+    arm();
+  };
+  for (const type of ['wheel', 'touchstart', 'keydown', 'pointerdown']) {
+    window.addEventListener(type, takeOver, { passive: true });
+  }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stop();
+    else arm();
+  });
+
+  if (import.meta.env.DEV) {
+    (window as unknown as { __autoScrollDebug?: () => unknown }).__autoScrollDebug = () => ({
+      started,
+      running,
+      armed: idleTimer !== 0,
+      hintHidden: hint?.hidden,
+    });
+
+    // Lets the loop be driven by hand where rAF is unavailable.
+    (window as unknown as { __autoScrollTick?: (ms: number) => number }).__autoScrollTick = (
+      ms: number,
+    ) => {
+      position = window.scrollY + (AUTO_SCROLL_SPEED * ms) / 1000;
+      window.scrollTo({ top: position, behavior: 'instant' });
+      return window.scrollY;
+    };
+  }
+
+  return () => {
+    started = true;
+    arm();
+  };
+}
+
+const armAutoScroll = createAutoScroll();
+
 /* --- Player -------------------------------------------------------------- */
 
 /* --- Countdown to the next Chhath ---------------------------------------- */
@@ -425,6 +557,9 @@ gate?.addEventListener(
   'click',
   async () => {
     gate.hidden = true;
+
+    // The journey has started, so begin counting idle time from here.
+    armAutoScroll();
 
     const mount = document.getElementById('player-mount');
     if (!mount) return;

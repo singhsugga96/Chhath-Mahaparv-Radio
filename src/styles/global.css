@@ -447,6 +447,54 @@ body {
   outline-offset: 3px;
 }
 
+/* --- Auto-scroll hint ----------------------------------------------------- */
+
+.autoscroll-hint {
+  position: fixed;
+  top: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.0625rem;
+  border-radius: 999px;
+  background: rgb(7 5 16 / 0.76);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgb(255 255 255 / 0.2);
+  font-family: var(--font-deva);
+  font-size: 0.8125rem;
+  color: var(--text);
+  text-align: center;
+  pointer-events: none;
+  animation: hint-in 500ms ease both;
+}
+
+.autoscroll-hint[hidden] {
+  display: none;
+}
+
+.autoscroll-hint__en {
+  font-family: var(--font);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+}
+
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
 /* --- Persistent player -------------------------------------------------- */
 
 /*

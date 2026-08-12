@@ -54,6 +54,15 @@ const description =
       </ul>
     </nav>
 
+    <!--
+      Shown only while the page is scrolling itself. Without it, a page that
+      starts moving on its own reads as a glitch rather than a guided tour.
+    -->
+    <p class="autoscroll-hint" id="autoscroll-hint" role="status" hidden>
+      पेज अपने आप चल रहा है, छूते ही रुक जाएगा
+      <span class="autoscroll-hint__en">scrolling on its own, touch to take over</span>
+    </p>
+
     <Player />
     <EntryGate />
 
