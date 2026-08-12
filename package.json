@@ -1,0 +1,21 @@
+{
+  "name": "chhath-radio",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "A scrolling guide to Chhath Puja, with the sky driven by scroll position.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "astro": "^7.2.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}
