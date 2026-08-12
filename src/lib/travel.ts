@@ -99,10 +99,10 @@ export function bookingReminderEvent(journeyMs: number): CalendarEvent {
   return {
     start: reminderAt(journeyMs),
     end: bookingOpensAt(journeyMs),
-    title: 'छठ यात्रा — ट्रेन टिकट बुकिंग खुलती है · Chhath train booking opens',
+    title: 'छठ की ट्रेन बुकिंग आज खुलती है · Chhath train booking opens today',
     details:
-      'General-quota booking opens at 08:00 IST, exactly 60 days before the date of journey. ' +
-      'Chhath trains to Bihar and eastern UP fill within minutes, so be logged in and ready before 08:00. ' +
-      'Note: for the first 15 minutes, booking is restricted to Aadhaar-authenticated users on the IRCTC site and app.',
+      'General quota opens at 8:00 am IST, exactly 60 days before the date of travel. ' +
+      'Trains to Bihar and eastern UP fill up in minutes around Chhath, so log in and be ready a little before 8. ' +
+      'For the first 15 minutes only Aadhaar verified users can book on the IRCTC site and app.',
   };
 }

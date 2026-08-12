@@ -37,7 +37,7 @@ export const TRACKS: readonly Track[] = [
   { videoId: 'iTffu3kgU7s', title: 'Rakho Sabhe Chhath Ke Barat', artist: 'Kavita Paudwal' },
   { videoId: 'WsvuH5QO23I', title: 'Kelwa Ke Paat Par', artist: 'Devi' },
   { videoId: 'O4ARvvmllCA', title: 'Tohe Badka Bhaiya Ho', artist: 'Sharda Sinha' },
-  { videoId: '_RDu847nhmU', title: 'Patna Ke Ghat Par — Hamhu Aragiya', artist: 'Sharda Sinha' },
+  { videoId: '_RDu847nhmU', title: 'Patna Ke Ghat Par', artist: 'Sharda Sinha' },
   { videoId: 'sH1bqkui-pA', title: 'Ho Dinanath', artist: 'T-Series Regional' },
   { videoId: '_ngNpxnA5hY', title: 'Kahele Mahadev Kari Haath Jodiya', artist: 'Pawan Singh' },
   { videoId: 'FIGYq0dsqQM', title: 'Chaar Hi Kunava Ke', artist: 'T-Series Regional' },

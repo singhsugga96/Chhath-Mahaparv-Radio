@@ -34,7 +34,7 @@ const { section, isIntro = false } = Astro.props;
           {section.items.map((item) => (
             <li>
               <span class="items__label">{item.label}</span>
-              <span class="items__note"> — {item.note}</span>
+              <span class="items__note">{item.note}</span>
             </li>
           ))}
         </ul>

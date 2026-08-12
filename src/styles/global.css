@@ -205,13 +205,17 @@ body {
   gap: 0.875rem;
 }
 
+/* Label above its note, so the two do not need a dash between them. */
 .items__label {
+  display: block;
   font-family: var(--font-deva);
   font-weight: 600;
   color: var(--text);
 }
 
 .items__note {
+  display: block;
+  margin-top: 0.0625rem;
   color: var(--text-dim);
   font-size: 0.9375rem;
 }

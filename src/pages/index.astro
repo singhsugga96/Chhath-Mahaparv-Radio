@@ -6,9 +6,9 @@ import Section from '../components/Section.astro';
 import { SECTIONS } from '../content/ritual';
 import '../styles/global.css';
 
-const title = 'छठ पूजा · Chhath Puja — how it is done';
+const title = 'छठ पूजा · How Chhath Puja is done';
 const description =
-  'A scrolling guide to Chhath Puja: the preparation, the four days, the prasad, and what makes it unlike any other festival — with the sky moving from pre-dawn to the closing sunrise as you read.';
+  'A scrolling guide to Chhath Puja. The preparation, the four days, the prasad, and what makes the festival different, with the sky moving from before dawn to the closing sunrise as you read.';
 ---
 
 <!doctype html>
@@ -46,7 +46,7 @@ const description =
                 type="button"
                 data-target={section.id}
                 aria-current={i === 0 ? 'true' : 'false'}
-                aria-label={`${section.titleEn} — ${section.titleHi}`}
+                aria-label={`${section.titleEn}, ${section.titleHi}`}
               />
             </li>
           ))

@@ -196,18 +196,26 @@ function startCountdown(): void {
   const datesEl = document.getElementById('countdown-dates');
   const daysEl = document.getElementById('cd-days');
 
-  /** Formats the festival's date span in Hindi, in IST. */
+  /**
+   * Formats the festival's date span in Hindi, in IST, e.g. "13 से 16 नवंबर 2026".
+   * Uses "से" rather than a dash, which is how the range would actually be said,
+   * and repeats the month only when the festival crosses one.
+   */
   const formatSpan = (days: readonly number[]): string => {
-    const opts: Intl.DateTimeFormatOptions = {
-      day: 'numeric',
-      month: 'long',
-      timeZone: 'Asia/Kolkata',
-    };
-    const first = new Intl.DateTimeFormat('hi-IN', opts).format(new Date(days[0]!));
-    const last = new Intl.DateTimeFormat('hi-IN', { ...opts, year: 'numeric' }).format(
-      new Date(days[3]!),
-    );
-    return `${first} – ${last}`;
+    const fmt = (opts: Intl.DateTimeFormatOptions): Intl.DateTimeFormat =>
+      new Intl.DateTimeFormat('hi-IN', { ...opts, timeZone: 'Asia/Kolkata' });
+
+    const first = new Date(days[0]!);
+    const last = new Date(days[3]!);
+    const sameMonth =
+      fmt({ month: 'long' }).format(first) === fmt({ month: 'long' }).format(last);
+
+    const start = sameMonth
+      ? fmt({ day: 'numeric' }).format(first)
+      : fmt({ day: 'numeric', month: 'long' }).format(first);
+    const end = fmt({ day: 'numeric', month: 'long', year: 'numeric' }).format(last);
+
+    return `${start} से ${end}`;
   };
 
   const tick = (): void => {
