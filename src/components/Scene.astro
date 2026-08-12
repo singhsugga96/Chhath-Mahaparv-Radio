@@ -110,6 +110,18 @@
       ></path>
     </g>
 
+    <!--
+      One cloud, reused at different sizes and speeds. Built from overlapping
+      ellipses so the silhouette stays soft at any scale.
+    -->
+    <g id="cloud">
+      <ellipse cx="0" cy="0" rx="62" ry="20"></ellipse>
+      <ellipse cx="-46" cy="7" rx="44" ry="15"></ellipse>
+      <ellipse cx="50" cy="6" rx="48" ry="16"></ellipse>
+      <ellipse cx="6" cy="-15" rx="40" ry="19"></ellipse>
+      <ellipse cx="-24" cy="-8" rx="34" ry="17"></ellipse>
+    </g>
+
     <!-- A single thekua disc, reused across the prasad soop. -->
     <g id="thekua">
       <ellipse rx="13" ry="9" fill="var(--ink)"></ellipse>
@@ -120,6 +132,21 @@
   <!-- ===================== permanent stage ===================== -->
 
   <rect width="1600" height="558" fill="url(#sky)"></rect>
+
+  <!--
+    Clouds, drawn before the disc so they can never dim the sun at the arghya
+    moments. Filled from --sky-horizon rather than white, so they are lit by
+    whatever the sky is doing: warm at sunset, navy at night, pale by day.
+    Three speeds give a little depth.
+  -->
+  <g class="clouds" fill="var(--sky-horizon)">
+    <g class="cloud cloud--far"><use href="#cloud" y="96" transform="scale(0.7)"></use></g>
+    <g class="cloud cloud--far cloud--b"><use href="#cloud" y="150" transform="scale(0.55)"></use></g>
+    <g class="cloud cloud--mid"><use href="#cloud" y="128" transform="scale(0.95)"></use></g>
+    <g class="cloud cloud--mid cloud--b"><use href="#cloud" y="230" transform="scale(0.8)"></use></g>
+    <g class="cloud cloud--near"><use href="#cloud" y="196" transform="scale(1.25)"></use></g>
+    <g class="cloud cloud--near cloud--b"><use href="#cloud" y="300" transform="scale(1.05)"></use></g>
+  </g>
 
   <!-- Sun or moon. boot.ts sets the transform from discAt(). -->
   <g class="disc" id="disc">

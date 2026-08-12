@@ -400,10 +400,24 @@ suspended while the document is hidden.
 
 The scene should never be completely frozen, but nothing should pull the eye.
 Every animation is slow, small, and out of phase: ripple bands drift laterally
-over 26–41s, floating diyas rise and settle, chulha smoke climbs and dissipates,
-the arghya pour runs as a travelling dash down the stream, and rings spread from
-the bather. Smoke is drawn **dark, not white** — both rites that use it happen in
-daylight, where white smoke on a pale sky was invisible.
+over 26 to 41 seconds, floating diyas rise and settle, chulha smoke climbs and
+dissipates, the arghya pour runs as a travelling dash down the stream, and rings
+spread from the bather. Smoke is drawn **dark, not white**, because both rites
+that use it happen in daylight where white smoke on a pale sky was invisible.
+
+**Clouds** cross the sky in three bands at 110 to 240 seconds a pass, with
+negative animation delays so the sky already has clouds in it on load rather than
+filling up from empty. Two details worth keeping:
+
+- They are filled from `--sky-horizon`, not white, so they are lit by whatever
+  the sky is doing. Coral at sunset, navy at night, pale by day, with no extra
+  wiring.
+- They are drawn **before the disc**, so they can never pass in front of the sun
+  and dim it at the two arghya moments. Those frames are the point of the page.
+
+Under reduced motion the clouds are given static translations rather than only
+having their animation removed. Without that they would all sit at their
+untranslated origin, stacked at the left edge, and a still sky would look broken.
 
 ### Motion
 

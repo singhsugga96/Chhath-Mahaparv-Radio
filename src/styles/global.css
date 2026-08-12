@@ -924,6 +924,51 @@ body {
  * the eye: every animation is slow, small, and out of phase with the others.
  */
 
+/*
+ * Clouds cross the sky right to left. Very slow, and each band at its own pace
+ * so they never travel as a group. Negative delays stagger them, so on load the
+ * sky already has clouds in it rather than an empty sky filling up.
+ */
+.cloud {
+  animation: cloud-drift linear infinite;
+}
+
+.cloud--far {
+  opacity: 0.38;
+  animation-duration: 210s;
+  animation-delay: -40s;
+}
+
+.cloud--mid {
+  opacity: 0.55;
+  animation-duration: 150s;
+  animation-delay: -95s;
+}
+
+.cloud--near {
+  opacity: 0.72;
+  animation-duration: 110s;
+  animation-delay: -20s;
+}
+
+/* Second cloud in each band, offset so the two never overlap in step. */
+.cloud--b {
+  animation-delay: -130s;
+}
+
+.cloud--far.cloud--b { animation-duration: 240s; }
+.cloud--mid.cloud--b { animation-duration: 175s; }
+.cloud--near.cloud--b { animation-duration: 128s; }
+
+@keyframes cloud-drift {
+  from {
+    transform: translateX(-360px);
+  }
+  to {
+    transform: translateX(1900px);
+  }
+}
+
 /* Ripple bands slide laterally, each at its own pace. */
 .drift {
   animation: drift 26s ease-in-out infinite alternate;
@@ -1018,9 +1063,22 @@ body {
   .smoke,
   .pour,
   .ring,
+  .cloud,
   .player__cover {
     animation: none;
   }
+
+  /*
+   * Without their animation the clouds all sit at their untranslated origin,
+   * stacked at the left edge. Spread them across the sky instead so a still
+   * scene still looks like a sky.
+   */
+  .cloud--far { transform: translateX(240px); }
+  .cloud--far.cloud--b { transform: translateX(1120px); }
+  .cloud--mid { transform: translateX(700px); }
+  .cloud--mid.cloud--b { transform: translateX(1400px); }
+  .cloud--near { transform: translateX(320px); }
+  .cloud--near.cloud--b { transform: translateX(980px); }
 
   /* The pour would otherwise render as a dashed line with no motion to explain it. */
   .pour {
