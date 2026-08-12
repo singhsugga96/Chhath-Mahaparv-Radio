@@ -41,6 +41,22 @@ const { section, isIntro = false } = Astro.props;
       )
     }
 
+    {
+      section.background && (
+        <details class="more">
+          <summary class="more__summary">और जानें · Read more</summary>
+          <div class="more__body">
+            {section.background.map((entry) => (
+              <div class="more__entry">
+                <p class="more__label">{entry.label}</p>
+                <p class="more__text">{entry.note}</p>
+              </div>
+            ))}
+          </div>
+        </details>
+      )
+    }
+
     {isIntro && <Countdown />}
     {isIntro && <TravelReminder />}
 

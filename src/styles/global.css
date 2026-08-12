@@ -220,6 +220,81 @@ body {
   font-size: 0.9375rem;
 }
 
+/* --- Read more -----------------------------------------------------------
+ * A native <details> so the extra history and context is there for whoever
+ * wants it without making every section a wall of text. Native means it works
+ * with the keyboard and with find-in-page for free.
+ */
+.more {
+  margin-top: 1.25rem;
+  border-top: 1px solid rgb(255 255 255 / 0.14);
+  padding-top: 0.875rem;
+}
+
+.more__summary {
+  cursor: pointer;
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-deva);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+}
+
+.more__summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Chevron that turns when the section opens. */
+.more__summary::after {
+  content: '';
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translate(-1px, -1px);
+  transition: transform 200ms ease;
+}
+
+.more[open] .more__summary::after {
+  transform: rotate(-135deg) translate(-1px, -1px);
+}
+
+.more__summary:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+  border-radius: 0.25rem;
+}
+
+.more__body {
+  display: grid;
+  gap: 0.875rem;
+  margin-top: 0.875rem;
+}
+
+.more__label {
+  margin: 0 0 0.125rem;
+  font-family: var(--font-deva);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.more__text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--text-dim);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .more__summary::after {
+    transition: none;
+  }
+}
+
 /* --- Countdown ----------------------------------------------------------- */
 
 /*
