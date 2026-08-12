@@ -511,6 +511,21 @@ Sharda Sinha has the largest share of the rotation at four of fourteen, which is
 what the credits section claims and needs rechecking if the playlist changes
 again.
 
+**The playlist is public and collaborative**, so a link sits in the top right
+corner reading "प्लेलिस्ट में गाना जोड़ें · anyone can add a song". It is framed as
+an invitation rather than a credit, because "playlist" on its own gives nobody a
+reason to click. Opens in a new tab with `rel="noopener noreferrer"`, and the
+`aria-label` says both that it opens in a new tab and that it can be added to.
+
+`PLAYLIST_URL` is built from `PLAYLIST_ID` in `playlist.ts`, next to the tracks
+it produced, so there is one source of truth. It is built rather than pasted, so
+the `si` tracking parameter from the shared link never reaches the page. Both
+facts are asserted in tests.
+
+On viewports under 480px the second line is dropped and the auto-scroll hint
+moves from the top of the screen to just above the player, so the two never
+collide.
+
 ## Testing
 
 Vitest against the pure modules:

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { TRACKS, type Track, playableTracks, shuffle } from './playlist';
+import {
+  PLAYLIST_ID,
+  PLAYLIST_URL,
+  TRACKS,
+  type Track,
+  playableTracks,
+  shuffle,
+} from './playlist';
 
 /** A rand stub that walks a fixed sequence, cycling if exhausted. */
 const seeded = (values: readonly number[]): (() => number) => {
@@ -8,6 +15,20 @@ const seeded = (values: readonly number[]): (() => number) => {
 };
 
 const track = (id: string): Track => ({ videoId: id, title: id, artist: 'a' });
+
+describe('PLAYLIST_URL', () => {
+  it('is an absolute youtube.com playlist link carrying the playlist id', () => {
+    const url = new URL(PLAYLIST_URL);
+    expect(url.protocol).toBe('https:');
+    expect(url.host).toBe('www.youtube.com');
+    expect(url.pathname).toBe('/playlist');
+    expect(url.searchParams.get('list')).toBe(PLAYLIST_ID);
+  });
+
+  it('carries no tracking parameters from the shared link', () => {
+    expect(new URL(PLAYLIST_URL).searchParams.get('si')).toBeNull();
+  });
+});
 
 describe('TRACKS', () => {
   it('holds the 14 verified tracks from the Chhath Puja Radio playlist', () => {

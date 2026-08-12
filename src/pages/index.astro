@@ -1,5 +1,6 @@
 ---
 import EntryGate from '../components/EntryGate.astro';
+import PlaylistLink from '../components/PlaylistLink.astro';
 import Player from '../components/Player.astro';
 import Scene from '../components/Scene.astro';
 import Section from '../components/Section.astro';
@@ -26,6 +27,8 @@ const description =
     <h1 class="sr-only">{title}</h1>
 
     <Scene />
+
+    <PlaylistLink />
 
     <main class="journey">
       {

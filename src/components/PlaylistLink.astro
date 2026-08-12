@@ -1,0 +1,34 @@
+---
+import { PLAYLIST_URL } from '../lib/playlist';
+
+/**
+ * Link to the source playlist, top right.
+ *
+ * The playlist is public and collaborative, so this is an invitation rather than
+ * a credit. The label says what you can do with it, because "playlist" on its
+ * own gives nobody a reason to click.
+ */
+---
+
+<a
+  class="playlist-link"
+  href={PLAYLIST_URL}
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Open the Chhath Puja Radio playlist on YouTube in a new tab. It is collaborative, so you can add a song to it."
+>
+  <span class="playlist-link__text">
+    <span class="playlist-link__main">प्लेलिस्ट में गाना जोड़ें</span>
+    <span class="playlist-link__sub">anyone can add a song</span>
+  </span>
+  <svg class="playlist-link__arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path
+      d="M7 17L17 7M17 7H9M17 7v8"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    ></path>
+  </svg>
+</a>

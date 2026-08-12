@@ -8,6 +8,15 @@ export interface Track {
   artist: string;
 }
 
+/** The playlist these tracks come from. */
+export const PLAYLIST_ID = 'PLYO7ixFsIl3M';
+
+/**
+ * Public link to the playlist. It is collaborative, so anyone opening this can
+ * add a song, which is why the link is offered rather than buried in a credit.
+ */
+export const PLAYLIST_URL = `https://www.youtube.com/playlist?list=${PLAYLIST_ID}`;
+
 /**
  * The rotation, taken from the playlist `PLYO7ixFsIl3M` ("Chhath Puja Radio").
  *
