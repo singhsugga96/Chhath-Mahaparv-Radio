@@ -510,8 +510,89 @@ body {
   opacity: var(--diya-glow);
 }
 
-.kosi {
-  opacity: var(--kosi);
+/*
+ * Ritual layers. Each is driven by its own --s-<stage id>, which boot.ts writes
+ * from stageVars(). The weights are a triangular window that always sums to 1,
+ * so exactly one rite is visible at a stage and two cross-fade between stages.
+ */
+.rite {
+  opacity: 0;
+}
+
+.rite--preparation { opacity: var(--s-preparation); }
+.rite--nahay-khay { opacity: var(--s-nahay-khay); }
+.rite--kharna { opacity: var(--s-kharna); }
+.rite--sandhya-arghya { opacity: var(--s-sandhya-arghya); }
+.rite--kosi-bharai { opacity: var(--s-kosi-bharai); }
+.rite--usha-arghya { opacity: var(--s-usha-arghya); }
+.rite--prasad { opacity: var(--s-prasad); }
+.rite--unique { opacity: var(--s-unique); }
+
+/* --- Ambient motion ------------------------------------------------------
+ * The scene should never be completely frozen, but nothing here should pull
+ * the eye: every animation is slow, small, and out of phase with the others.
+ */
+
+/* Ripple bands slide laterally, each at its own pace. */
+.drift {
+  animation: drift 26s ease-in-out infinite alternate;
+}
+.drift--b { animation-duration: 34s; animation-delay: -6s; }
+.drift--c { animation-duration: 41s; animation-delay: -13s; }
+
+@keyframes drift {
+  from { transform: translateX(-22px); }
+  to { transform: translateX(22px); }
+}
+
+/* Floating diyas rise and settle on the water. */
+.bob {
+  animation: bob 7s ease-in-out infinite alternate;
+}
+.bob--b { animation-duration: 9s; }
+.bob--c { animation-duration: 11s; }
+
+@keyframes bob {
+  from { transform: translateY(0); }
+  to { transform: translateY(-6px); }
+}
+
+/* Smoke climbs and dissipates. */
+.smoke {
+  transform-box: fill-box;
+  transform-origin: bottom center;
+  animation: smoke 9s ease-out infinite;
+}
+.smoke--2 { animation-duration: 12s; animation-delay: -4s; }
+
+@keyframes smoke {
+  0% { opacity: 0; transform: translateY(10px) scale(0.85); }
+  35% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-46px) scale(1.25); }
+}
+
+/* Water poured in arghya, drawn as a travelling dash down the stream. */
+.pour {
+  stroke-dasharray: 16 46;
+  animation: pour 1.5s linear infinite;
+}
+
+@keyframes pour {
+  to { stroke-dashoffset: -62; }
+}
+
+/* Rings spreading from the bather. */
+.ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ring 5s ease-out infinite;
+}
+.ring--2 { animation-delay: -1.7s; }
+.ring--3 { animation-delay: -3.4s; }
+
+@keyframes ring {
+  0% { opacity: 0.5; transform: scale(0.3); }
+  100% { opacity: 0; transform: scale(2.6); }
 }
 
 /* Section text rises slightly as it enters view. The only scroll-linked
@@ -539,12 +620,26 @@ body {
     scroll-behavior: auto;
   }
 
-  .diya {
+  /* All ambient scene motion stops; the rites themselves stay visible. */
+  .diya,
+  .drift,
+  .bob,
+  .smoke,
+  .pour,
+  .ring,
+  .player__cover {
     animation: none;
   }
 
-  .player__cover {
-    animation: none;
+  /* The pour would otherwise render as a dashed line with no motion to explain it. */
+  .pour {
+    stroke-dasharray: none;
+  }
+
+  /* Only the innermost ring, held still, instead of three stacked at full size. */
+  .ring--2,
+  .ring--3 {
+    display: none;
   }
 
   .section__inner {

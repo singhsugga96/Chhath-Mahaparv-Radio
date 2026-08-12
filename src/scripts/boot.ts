@@ -2,6 +2,7 @@ import { formatTime } from '../lib/format';
 import { STAGES, narrativeMinutes } from '../lib/narrative';
 import { TRACKS, type Track } from '../lib/playlist';
 import { sceneVars } from '../lib/scene-vars';
+import { stageVars } from '../lib/stages';
 import { discAt } from '../lib/sun';
 import { type PlayerHandle, createPlayer } from '../lib/youtube';
 
@@ -36,7 +37,11 @@ const stageIndexOf = (el: HTMLElement): number =>
  * @param minutes Narrative minute; may exceed 1440.
  */
 function paint(minutes: number): void {
+  // Sky and disc colours, then one opacity per ritual layer.
   for (const [prop, value] of Object.entries(sceneVars(minutes))) {
+    root.style.setProperty(prop, value);
+  }
+  for (const [prop, value] of Object.entries(stageVars(minutes))) {
     root.style.setProperty(prop, value);
   }
 
@@ -48,14 +53,6 @@ function paint(minutes: number): void {
   disc?.setAttribute('transform', `translate(${px} ${(y / 100) * VIEW_H})`);
   // Reflection is 160 wide, so offset by half to centre it under the disc.
   reflection?.setAttribute('x', String(px - 80));
-
-  // The Kosi canopy fades in around its own stage rather than by time of day,
-  // because the rite is specific to that night.
-  const kosi = STAGES.find((s) => s.id === 'kosi-bharai');
-  if (kosi) {
-    const distance = Math.abs(minutes - kosi.minutes);
-    root.style.setProperty('--kosi', String(Math.max(0, 1 - distance / 220)));
-  }
 }
 
 /*

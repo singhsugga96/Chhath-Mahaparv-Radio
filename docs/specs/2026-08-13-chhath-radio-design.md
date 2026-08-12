@@ -257,13 +257,45 @@ One `position: fixed` SVG backdrop behind all sections. It is server-rendered
 once and never re-created; only CSS custom properties change as you scroll, so
 there is no DOM churn and no layout thrash.
 
-The scene gains two elements this revision:
+### Ritual layers
 
-- **A sugarcane canopy with lamps beneath it**, faded in only around the Kosi
-  Bharai section via its own opacity variable. It is the one element tied to a
-  specific section rather than to the time of day, because the rite is specific.
-- **A soop and daura** resting on the ghat steps, visible from the Preparation
-  section onward.
+The scene is not one fixed picture that recolours. On top of the permanent stage
+sit **eight ritual layers, one per narrative stage**, each showing what its
+section describes:
+
+| Stage | What the scene shows |
+|---|---|
+| तैयारी | Grinding wheat at the chakki, a chulha alight with smoke climbing, new soop and daura stacked |
+| नहाय खाय | A figure standing waist-deep, lifting water in cupped hands, rings spreading outward |
+| खरना | Kheer on the fire, a seated figure waiting, a lamp on the step |
+| संध्या अर्घ्य | Three figures in the water, arms raised, **water pouring from the lota** toward the setting sun, and a laden soop |
+| कोसी भराई | Five sugarcane stalks tied into a canopy with lamps beneath |
+| उषा अर्घ्य | A larger gathering, five figures, mirrored to face the rising sun |
+| प्रसाद | The soop laid out — thekua, sugarcane, coconut, bananas, turmeric root |
+| क्या खास है | The ghat crowded, eight silhouettes along the bank |
+
+Visibility comes from `stages.ts`, which is pure and unit-tested. Each stage gets
+a **triangular window**: opacity 1 at its own minute, falling to 0 at each
+neighbouring stage. Adjacent rites therefore cross-fade and the weights **always
+sum to exactly 1**, which matters because the stages are very unevenly spaced —
+80 minutes apart at the end, 225 in the middle. A fixed falloff would make the
+late rites pile up on one another. This replaces the bespoke `--kosi` variable of
+the previous revision.
+
+**Layout constraint worth remembering:** the far bank is an opaque band from
+roughly y 520 to 558. Anything dark drawn into it merges with it and disappears —
+the arghya figures were first drawn there and read as featureless tree trunks.
+Figures therefore stand below y 600, silhouetted against the lit water. Only
+light or rising elements (smoke, the canopy apex) belong in that band.
+
+### Ambient motion
+
+The scene should never be completely frozen, but nothing should pull the eye.
+Every animation is slow, small, and out of phase: ripple bands drift laterally
+over 26–41s, floating diyas rise and settle, chulha smoke climbs and dissipates,
+the arghya pour runs as a travelling dash down the stream, and rings spread from
+the bather. Smoke is drawn **dark, not white** — both rites that use it happen in
+daylight, where white smoke on a pale sky was invisible.
 
 ### Motion
 
@@ -381,6 +413,10 @@ Vitest against the pure modules:
   morning, continuous across midnight, position always in range
 - `narrative.ts` — monotonic across the whole scroll, exact section minutes at
   section boundaries, correct interpolation between sections, clamped at both ends
+- `stages.ts` — each rite is fully on at its own stage and fully off at every
+  other, neighbours cross-fade evenly at the midpoint, the first and last stages
+  stay open beyond the ends of the arc, and **the weights sum to 1 everywhere**,
+  which is the property that makes uneven stage spacing safe
 - `playlist.ts` — shuffle is a permutation that never drops or duplicates, is
   deterministic for a given rand, and dead ids are excluded
 - `format.ts` — `m:ss` under an hour and `h:mm:ss` above, fractions truncate, and

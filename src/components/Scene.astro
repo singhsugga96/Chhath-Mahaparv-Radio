@@ -1,12 +1,18 @@
 ---
 /**
- * The ghat scene: a gradient sky, a sun/moon disc on its arc, the far bank,
- * the river, ghat steps, figures standing in the water offering arghya, the
- * soop and daura, floating diyas, and the Kosi Bharai sugarcane canopy.
+ * The ghat scene.
  *
- * Server-rendered once and fixed behind the sections. This component holds
- * shape only — every color comes from a CSS custom property that boot.ts drives
- * from the scroll position. No color values and no timing live here.
+ * Two kinds of content:
+ *
+ * 1. The permanent stage — sky, sun/moon on its arc, far bank, river, ghat steps,
+ *    floating diyas. Colour comes from CSS custom properties driven by scroll.
+ * 2. Ritual layers, one per narrative stage, each wrapped in `.rite` and faded by
+ *    its own `--s-<stage id>` property. Only the current rite (and its
+ *    cross-fading neighbour) is visible, so the scene *shows* what the section
+ *    describes instead of merely recolouring.
+ *
+ * Server-rendered once and fixed behind the sections. No colour values and no
+ * timing live here — shape only, plus the ambient CSS animations.
  */
 ---
 
@@ -23,18 +29,10 @@
       <stop offset="72%" stop-color="var(--sky-horizon)"></stop>
     </linearGradient>
 
-    <!-- Far water catches the horizon light; near water darkens with depth, so
-         the river reads as receding rather than as one flat field. -->
     <linearGradient id="river" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="var(--sky-horizon)" stop-opacity="0.72"></stop>
       <stop offset="16%" stop-color="var(--water)"></stop>
       <stop offset="100%" stop-color="var(--ink)" stop-opacity="0.55"></stop>
-    </linearGradient>
-
-    <!-- Horizontal ripple bands, faint, to break up the surface. -->
-    <linearGradient id="ripple" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#fff" stop-opacity="0.07"></stop>
-      <stop offset="100%" stop-color="#fff" stop-opacity="0"></stop>
     </linearGradient>
 
     <radialGradient id="halo">
@@ -47,8 +45,11 @@
       <stop offset="100%" stop-color="rgb(255 176 71 / 0)"></stop>
     </radialGradient>
 
-    <!-- The reflection column fades out downwards and at both edges, so it
-         reads as light on water rather than a pasted rectangle. -->
+    <linearGradient id="ripple" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.07"></stop>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"></stop>
+    </linearGradient>
+
     <linearGradient id="reflectionFade" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="rgb(var(--disc-halo) / 0.3)"></stop>
       <stop offset="60%" stop-color="rgb(var(--disc-halo) / 0.08)"></stop>
@@ -64,9 +65,60 @@
     <mask id="reflectionMask" maskContentUnits="objectBoundingBox">
       <rect width="1" height="1" fill="url(#reflectionEdges)"></rect>
     </mask>
+
+    <!-- Water poured in arghya: bright at the lip, vanishing before it lands. -->
+    <linearGradient id="pour" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff" stop-opacity="0.85"></stop>
+      <stop offset="70%" stop-color="#fff" stop-opacity="0.35"></stop>
+      <stop offset="100%" stop-color="#fff" stop-opacity="0"></stop>
+    </linearGradient>
+
+    <!--
+      Chulha smoke, drawn dark rather than white: both rites that use it happen
+      in daylight, and white smoke on a pale morning sky was invisible.
+    -->
+    <linearGradient id="smoke" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="var(--ink)" stop-opacity="0.45"></stop>
+      <stop offset="100%" stop-color="var(--ink)" stop-opacity="0"></stop>
+    </linearGradient>
+
+    <!--
+      One figure offering arghya: torso, head, arms raised, a lota at the hands,
+      and water falling from it. Reused at both arghya rites via <use>, which
+      keeps the two crowds cheap.
+    -->
+    <g id="arghya-figure">
+      <!-- draped body, narrowing to the waterline -->
+      <path d="M-15 -38 Q0 -44 15 -38 L20 34 L-20 34 Z" fill="var(--ink)"></path>
+      <circle cx="0" cy="-50" r="11" fill="var(--ink)"></circle>
+      <!--
+        Arms swung wide before rising, so they stay legible as arms at this size.
+        Kept clear of the head, which they merged with when drawn vertically.
+      -->
+      <path d="M-13 -32 L-34 -60 L-27 -68 L-4 -40 Z" fill="var(--ink)"></path>
+      <path d="M13 -32 L34 -60 L27 -68 L4 -40 Z" fill="var(--ink)"></path>
+      <!-- lota held between the hands, tipping forward -->
+      <path d="M-17 -72 Q0 -84 17 -72 Q13 -60 0 -60 Q-13 -60 -17 -72 Z" fill="var(--ink)"></path>
+      <!-- the pour, falling clear of the body toward the water -->
+      <path
+        class="pour"
+        d="M3 -62 Q9 -34 5 4"
+        stroke="url(#pour)"
+        stroke-width="3.5"
+        fill="none"
+        stroke-linecap="round"
+      ></path>
+    </g>
+
+    <!-- A single thekua disc, reused across the prasad soop. -->
+    <g id="thekua">
+      <ellipse rx="13" ry="9" fill="var(--ink)"></ellipse>
+      <ellipse rx="13" ry="9" fill="rgb(255 214 150 / 0.22)"></ellipse>
+    </g>
   </defs>
 
-  <!-- Sky -->
+  <!-- ===================== permanent stage ===================== -->
+
   <rect width="1600" height="558" fill="url(#sky)"></rect>
 
   <!-- Sun or moon. boot.ts sets the transform from discAt(). -->
@@ -75,7 +127,11 @@
     <circle r="34" fill="var(--disc-color)"></circle>
   </g>
 
-  <!-- Far bank: a low silhouette of the opposite shore -->
+  <!--
+    Far bank, opaque on purpose: at partial opacity it tinted the sun grey
+    instead of hiding it, because the disc's upper half sits in this band at the
+    arghya moments.
+  -->
   <path
     d="M0 540 L120 528 L210 534 L300 520 L420 532 L520 522 L640 534 L760 524
        L900 536 L1020 526 L1140 534 L1260 522 L1380 532 L1500 526 L1600 534
@@ -83,29 +139,20 @@
     fill="var(--ink)"
   ></path>
 
-  <!--
-    Opaque on purpose. At 55% the bank tinted the sun grey instead of hiding it,
-    because the disc's upper half sits inside this band at the arghya moments.
-    Opaque makes the sun properly sink behind the far shore.
-  -->
-
-  <!-- Temple spires on the far bank -->
   <path d="M352 522 L368 468 L384 522 Z" fill="var(--ink)"></path>
   <path d="M1188 528 L1206 462 L1224 528 Z" fill="var(--ink)"></path>
 
-  <!-- River -->
   <rect y="558" width="1600" height="342" fill="url(#river)"></rect>
 
-  <!-- Ripple bands: wide, flat ellipses that suggest a surface without motion -->
+  <!-- Ripple bands. Each drifts slowly so the surface is never quite still. -->
   <g fill="url(#ripple)">
-    <ellipse cx="700" cy="592" rx="760" ry="7"></ellipse>
-    <ellipse cx="900" cy="628" rx="640" ry="8"></ellipse>
-    <ellipse cx="560" cy="672" rx="700" ry="9"></ellipse>
-    <ellipse cx="1000" cy="734" rx="580" ry="10"></ellipse>
-    <ellipse cx="640" cy="806" rx="660" ry="11"></ellipse>
+    <ellipse class="drift drift--a" cx="700" cy="592" rx="760" ry="7"></ellipse>
+    <ellipse class="drift drift--b" cx="900" cy="628" rx="640" ry="8"></ellipse>
+    <ellipse class="drift drift--c" cx="560" cy="672" rx="700" ry="9"></ellipse>
+    <ellipse class="drift drift--b" cx="1000" cy="734" rx="580" ry="10"></ellipse>
+    <ellipse class="drift drift--a" cx="640" cy="806" rx="660" ry="11"></ellipse>
   </g>
 
-  <!-- Reflection column beneath the disc. boot.ts sets its x. -->
   <rect
     id="reflection"
     y="558"
@@ -115,7 +162,7 @@
     mask="url(#reflectionMask)"
   ></rect>
 
-  <!-- Ghat steps, right bank, receding into the water -->
+  <!-- Ghat steps, right bank -->
   <g fill="var(--ink)">
     <rect x="1180" y="612" width="420" height="26"></rect>
     <rect x="1240" y="638" width="360" height="26"></rect>
@@ -130,47 +177,104 @@
     <rect x="0" y="676" width="180" height="224"></rect>
   </g>
 
-  <!--
-    Figures standing in the water offering arghya: torso, head, raised arms,
-    and the soop held above. Deliberately simple silhouettes.
-  -->
-  <g fill="var(--ink)">
-    <g transform="translate(560 604)">
-      <circle cx="0" cy="-52" r="13"></circle>
-      <path d="M-16 -38 Q0 -44 16 -38 L22 44 L-22 44 Z"></path>
-      <path d="M-16 -30 L-30 -60 L-24 -64 L-8 -36 Z"></path>
-      <path d="M16 -30 L30 -60 L24 -64 L8 -36 Z"></path>
-      <ellipse cx="0" cy="-68" rx="26" ry="7"></ellipse>
+  <!-- ===================== ritual layers ===================== -->
+
+  <!-- तैयारी — grinding wheat for thekua, a chulha alight, new soop and daura -->
+  <g class="rite rite--preparation">
+    <!-- seated figure at the grinding stone -->
+    <g transform="translate(310 700)">
+      <circle cx="0" cy="-46" r="12" fill="var(--ink)"></circle>
+      <path d="M-18 -34 Q0 -40 18 -34 L24 8 L-24 8 Z" fill="var(--ink)"></path>
+      <path d="M16 -28 L40 -20 L38 -12 L14 -20 Z" fill="var(--ink)"></path>
+      <!-- chakki: two stacked stones with a handle -->
+      <ellipse cx="46" cy="-6" rx="30" ry="9" fill="var(--ink)"></ellipse>
+      <ellipse cx="46" cy="-16" rx="26" ry="8" fill="var(--ink)"></ellipse>
+      <rect x="60" y="-34" width="5" height="20" fill="var(--ink)"></rect>
     </g>
-    <g transform="translate(668 616)">
-      <circle cx="0" cy="-48" r="12"></circle>
-      <path d="M-15 -35 Q0 -41 15 -35 L20 40 L-20 40 Z"></path>
-      <path d="M-15 -28 L-27 -55 L-21 -59 L-7 -33 Z"></path>
-      <path d="M15 -28 L27 -55 L21 -59 L7 -33 Z"></path>
-      <ellipse cx="0" cy="-62" rx="24" ry="6"></ellipse>
+
+    <!-- chulha with a pot, smoke rising -->
+    <g transform="translate(500 722)">
+      <path d="M-22 0 L22 0 L16 -24 L-16 -24 Z" fill="var(--ink)"></path>
+      <ellipse cx="0" cy="-26" rx="22" ry="7" fill="var(--ink)"></ellipse>
+      <path d="M-14 -26 Q0 -44 14 -26 Z" fill="var(--ink)"></path>
+      <circle cx="0" cy="-6" r="7" fill="rgb(255 150 60 / 0.75)"></circle>
+      <g fill="url(#smoke)">
+        <path class="smoke smoke--1" d="M-6 -44 Q-16 -74 -4 -104 Q6 -126 -2 -150 L10 -150 Q18 -124 8 -102 Q-2 -74 6 -44 Z"></path>
+        <path class="smoke smoke--2" d="M8 -44 Q20 -70 10 -96 Q2 -116 12 -138 L22 -136 Q14 -114 22 -94 Q30 -68 20 -44 Z"></path>
+      </g>
     </g>
-    <g transform="translate(452 594)">
-      <circle cx="0" cy="-42" r="10"></circle>
-      <path d="M-13 -31 Q0 -36 13 -31 L17 34 L-17 34 Z"></path>
-      <ellipse cx="0" cy="-54" rx="20" ry="5"></ellipse>
+
+    <!-- stacks of new soop, and a daura -->
+    <g transform="translate(700 762)">
+      <ellipse cx="0" cy="0" rx="36" ry="10" fill="var(--ink)" transform="rotate(-16)"></ellipse>
+      <ellipse cx="6" cy="-12" rx="36" ry="10" fill="var(--ink)" transform="rotate(-12)"></ellipse>
+      <path d="M60 6 L128 6 L120 44 L68 44 Z" fill="var(--ink)"></path>
+      <rect x="56" y="0" width="76" height="8" rx="4" fill="var(--ink)"></rect>
     </g>
   </g>
 
-  <!-- Soop and daura resting on the left ghat steps -->
-  <g fill="var(--ink)">
-    <!-- Daura: the large carrying basket -->
-    <path d="M196 640 L268 640 L260 676 L204 676 Z"></path>
-    <rect x="192" y="634" width="80" height="8" rx="4"></rect>
-    <!-- Soop: the flat winnowing tray, leaning against it -->
-    <ellipse cx="300" cy="654" rx="34" ry="9" transform="rotate(-24 300 654)"></ellipse>
+  <!-- नहाय खाय — the bathe, standing waist-deep with ripples spreading -->
+  <g class="rite rite--nahay-khay">
+    <g transform="translate(700 680)">
+      <circle cx="0" cy="-40" r="12" fill="var(--ink)"></circle>
+      <path d="M-17 -26 Q0 -32 17 -26 L20 30 L-20 30 Z" fill="var(--ink)"></path>
+      <!-- hands cupped at the chest, lifting water -->
+      <path d="M-14 -18 Q-2 -6 12 -16 L8 -24 Q-2 -16 -10 -26 Z" fill="var(--ink)"></path>
+    </g>
+    <!-- concentric rings spreading from where they stand -->
+    <g fill="none" stroke="#fff" stroke-opacity="0.22">
+      <ellipse class="ring ring--1" cx="700" cy="712" rx="40" ry="10"></ellipse>
+      <ellipse class="ring ring--2" cx="700" cy="712" rx="40" ry="10"></ellipse>
+      <ellipse class="ring ring--3" cx="700" cy="712" rx="40" ry="10"></ellipse>
+    </g>
   </g>
 
+  <!-- खरना — kheer on the fire at dusk, the household waiting -->
+  <g class="rite rite--kharna">
+    <g transform="translate(1080 716)">
+      <!-- chulha and the kheer pot -->
+      <path d="M-26 0 L26 0 L18 -28 L-18 -28 Z" fill="var(--ink)"></path>
+      <ellipse cx="0" cy="-30" rx="26" ry="8" fill="var(--ink)"></ellipse>
+      <path d="M-18 -30 Q0 -52 18 -30 Z" fill="var(--ink)"></path>
+      <circle cx="0" cy="-8" r="8" fill="rgb(255 150 60 / 0.8)"></circle>
+      <g fill="url(#smoke)">
+        <path class="smoke smoke--1" d="M-4 -52 Q-14 -80 -2 -110 Q8 -132 0 -156 L12 -156 Q20 -130 10 -108 Q0 -80 8 -52 Z"></path>
+      </g>
+      <!-- seated figure beside it -->
+      <g transform="translate(-72 4)">
+        <circle cx="0" cy="-42" r="11" fill="var(--ink)"></circle>
+        <path d="M-16 -30 Q0 -36 16 -30 L20 4 L-20 4 Z" fill="var(--ink)"></path>
+      </g>
+      <!-- a lamp on the step -->
+      <g class="diya">
+        <circle cx="66" cy="-6" r="20" fill="url(#diyaGlow)"></circle>
+        <circle cx="66" cy="-6" r="3" fill="#ffd9a0"></circle>
+      </g>
+    </g>
+  </g>
+
+  <!-- संध्या अर्घ्य — arghya to the setting sun, facing right -->
   <!--
-    Kosi Bharai: five sugarcane stalks tied into a canopy with lamps beneath.
-    Faded in only around its own section, via --kosi. This is the one element
-    tied to a section rather than to the time of day, because the rite is.
+    Figures stand well below the far bank. Drawn any higher, their heads and
+    raised arms overlapped that opaque band and the whole group merged into one
+    black mass; against the lit water they read clearly.
   -->
-  <g class="kosi">
+  <g class="rite rite--sandhya-arghya">
+    <use href="#arghya-figure" x="548" y="686"></use>
+    <use href="#arghya-figure" x="672" y="702" transform="scale(0.9)" style="transform-origin: 672px 702px"></use>
+    <use href="#arghya-figure" x="438" y="668" transform="scale(0.8)" style="transform-origin: 438px 668px"></use>
+    <!-- a laden soop held at the waterline -->
+    <g transform="translate(858 716)">
+      <ellipse rx="42" ry="12" fill="var(--ink)"></ellipse>
+      <circle cx="-18" cy="-12" r="8" fill="var(--ink)"></circle>
+      <circle cx="2" cy="-14" r="9" fill="var(--ink)"></circle>
+      <circle cx="20" cy="-11" r="7" fill="var(--ink)"></circle>
+      <rect x="-6" y="-40" width="4" height="28" fill="var(--ink)"></rect>
+    </g>
+  </g>
+
+  <!-- कोसी भराई — sugarcane canopy with lamps beneath -->
+  <g class="rite rite--kosi-bharai">
     <g stroke="var(--ink)" stroke-width="7" stroke-linecap="round" fill="none">
       <path d="M840 720 L862 520"></path>
       <path d="M884 722 L878 518"></path>
@@ -178,9 +282,7 @@
       <path d="M796 720 L846 522"></path>
       <path d="M960 718 L910 524"></path>
     </g>
-    <!-- The tie at the apex -->
-    <ellipse cx="878" cy="518" rx="30" ry="9" fill="var(--ink)"></ellipse>
-    <!-- Lamps beneath the canopy -->
+    <ellipse cx="878" cy="518" rx="22" ry="7" fill="var(--ink)"></ellipse>
     <g>
       <g class="diya" style="animation-delay: 0.1s">
         <circle cx="838" cy="702" r="26" fill="url(#diyaGlow)"></circle>
@@ -197,29 +299,85 @@
     </g>
   </g>
 
-  <!-- Diyas floating on the water. Group opacity is driven by --diya-glow. -->
+  <!-- उषा अर्घ्य — arghya to the rising sun, a larger gathering, facing left -->
+  <g class="rite rite--usha-arghya">
+    <g style="transform: scaleX(-1); transform-origin: 800px 0px">
+      <use href="#arghya-figure" x="560" y="690"></use>
+      <use href="#arghya-figure" x="676" y="706" transform="scale(0.92)" style="transform-origin: 676px 706px"></use>
+      <use href="#arghya-figure" x="452" y="672" transform="scale(0.83)" style="transform-origin: 452px 672px"></use>
+      <use href="#arghya-figure" x="352" y="654" transform="scale(0.74)" style="transform-origin: 352px 654px"></use>
+      <use href="#arghya-figure" x="908" y="712" transform="scale(0.86)" style="transform-origin: 908px 712px"></use>
+    </g>
+  </g>
+
+  <!-- प्रसाद — the soop laid out: thekua, sugarcane, coconut, banana, turmeric -->
+  <g class="rite rite--prasad">
+    <g transform="translate(800 742)">
+      <!-- the tray -->
+      <ellipse rx="240" ry="62" fill="var(--ink)"></ellipse>
+      <ellipse rx="222" ry="52" fill="rgb(255 214 150 / 0.1)"></ellipse>
+      <!-- thekua -->
+      <use href="#thekua" x="-150" y="-16"></use>
+      <use href="#thekua" x="-118" y="4"></use>
+      <use href="#thekua" x="-86" y="-12"></use>
+      <!-- sugarcane lengths laid across -->
+      <g stroke="var(--ink)" stroke-width="9" stroke-linecap="round">
+        <path d="M-40 -34 L86 -34"></path>
+        <path d="M-30 -14 L96 -14"></path>
+      </g>
+      <!-- coconut -->
+      <circle cx="140" cy="-16" r="24" fill="var(--ink)"></circle>
+      <!-- banana comb -->
+      <g fill="var(--ink)">
+        <path d="M40 16 Q66 -2 92 16 Q66 26 40 16 Z"></path>
+        <path d="M50 26 Q74 10 98 26 Q74 34 50 26 Z"></path>
+      </g>
+      <!-- turmeric root with leaves -->
+      <g fill="var(--ink)">
+        <path d="M-186 12 Q-172 -6 -158 12 Q-172 20 -186 12 Z"></path>
+        <path d="M-176 -6 L-170 -44 L-162 -42 L-168 -6 Z"></path>
+      </g>
+    </g>
+  </g>
+
+  <!-- क्या खास है — the ghat crowded, the shared act -->
+  <g class="rite rite--unique">
+    <g fill="var(--ink)">
+      <g transform="translate(300 618)"><circle cy="-38" r="11"></circle><path d="M-15 -27 Q0 -33 15 -27 L18 30 L-18 30 Z"></path></g>
+      <g transform="translate(380 624)"><circle cy="-36" r="10"></circle><path d="M-14 -26 Q0 -31 14 -26 L17 28 L-17 28 Z"></path></g>
+      <g transform="translate(455 616)"><circle cy="-40" r="11"></circle><path d="M-15 -28 Q0 -34 15 -28 L18 30 L-18 30 Z"></path></g>
+      <g transform="translate(1080 626)"><circle cy="-37" r="10"></circle><path d="M-14 -27 Q0 -32 14 -27 L17 28 L-17 28 Z"></path></g>
+      <g transform="translate(1155 620)"><circle cy="-39" r="11"></circle><path d="M-15 -28 Q0 -33 15 -28 L18 29 L-18 29 Z"></path></g>
+      <g transform="translate(1230 630)"><circle cy="-35" r="10"></circle><path d="M-13 -25 Q0 -30 13 -25 L16 26 L-16 26 Z"></path></g>
+      <g transform="translate(620 612)"><circle cy="-41" r="12"></circle><path d="M-16 -29 Q0 -35 16 -29 L19 32 L-19 32 Z"></path></g>
+      <g transform="translate(940 620)"><circle cy="-38" r="11"></circle><path d="M-15 -27 Q0 -33 15 -27 L18 30 L-18 30 Z"></path></g>
+    </g>
+  </g>
+
+  <!-- ===================== floating diyas, always ===================== -->
+
   <g class="diyas">
-    <g class="diya" style="animation-delay: 0s">
+    <g class="diya bob bob--a" style="animation-delay: 0s">
       <circle cx="300" cy="700" r="30" fill="url(#diyaGlow)"></circle>
       <circle cx="300" cy="700" r="4" fill="#ffd9a0"></circle>
     </g>
-    <g class="diya" style="animation-delay: 0.7s">
+    <g class="diya bob bob--b" style="animation-delay: 0.7s">
       <circle cx="420" cy="756" r="26" fill="url(#diyaGlow)"></circle>
       <circle cx="420" cy="756" r="3.5" fill="#ffd9a0"></circle>
     </g>
-    <g class="diya" style="animation-delay: 1.4s">
+    <g class="diya bob bob--c" style="animation-delay: 1.4s">
       <circle cx="760" cy="784" r="28" fill="url(#diyaGlow)"></circle>
       <circle cx="760" cy="784" r="4" fill="#ffd9a0"></circle>
     </g>
-    <g class="diya" style="animation-delay: 2.1s">
+    <g class="diya bob bob--a" style="animation-delay: 2.1s">
       <circle cx="1000" cy="812" r="24" fill="url(#diyaGlow)"></circle>
       <circle cx="1000" cy="812" r="3.5" fill="#ffd9a0"></circle>
     </g>
-    <g class="diya" style="animation-delay: 0.35s">
+    <g class="diya bob bob--b" style="animation-delay: 0.35s">
       <circle cx="1140" cy="742" r="26" fill="url(#diyaGlow)"></circle>
       <circle cx="1140" cy="742" r="3.5" fill="#ffd9a0"></circle>
     </g>
-    <g class="diya" style="animation-delay: 1.75s">
+    <g class="diya bob bob--c" style="animation-delay: 1.75s">
       <circle cx="600" cy="846" r="22" fill="url(#diyaGlow)"></circle>
       <circle cx="600" cy="846" r="3" fill="#ffd9a0"></circle>
     </g>
