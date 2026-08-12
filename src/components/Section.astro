@@ -1,6 +1,7 @@
 ---
 import type { RitualSection } from '../content/ritual';
 import Countdown from './Countdown.astro';
+import TravelReminder from './TravelReminder.astro';
 
 interface Props {
   /** The section to render. */
@@ -41,6 +42,7 @@ const { section, isIntro = false } = Astro.props;
     }
 
     {isIntro && <Countdown />}
+    {isIntro && <TravelReminder />}
 
     {section.note && <p class="section__note">{section.note}</p>}
   </div>

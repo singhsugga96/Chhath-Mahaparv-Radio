@@ -175,9 +175,48 @@ It runs entirely client-side. The site is a static build, so which festival is
 "next" depends on when the page is *viewed*, not when it was built — a
 server-rendered value would go stale.
 
-The ticking numbers are `aria-hidden`, since a per-second live region is
-unusable with a screen reader; a visually hidden line states the same
-information once. Figures are tabular so the seconds do not jitter the layout.
+**Days only.** Hours, minutes and seconds were noise for something months away,
+and dropping them also removed the per-second tick. It refreshes once a minute,
+which is enough to roll the number over promptly at IST midnight.
+
+### Train booking reminder
+
+Beneath the countdown, because the practical thing a Chhath page can do is tell
+you the one morning you have to be awake for. Everyone travels home and the seats
+are gone in minutes.
+
+The rule, verified rather than assumed: Indian Railways' Advance Reservation
+Period is **60 days excluding the date of journey**, and general-quota booking
+opens at **08:00 IST**. It was 120 days until 1 November 2024. Since 1 October
+2025 the **first 15 minutes are restricted to Aadhaar-authenticated users** on
+the IRCTC site and app — surfaced in the widget's footnote, because it decides
+whether you can even compete for a seat.
+
+- Pick a journey date — the ten days before Nahay Khay, so 3–12 November for
+  2026. Defaults to the day before the festival starts.
+- The widget shows the morning booking opens, computed as journey − 60 days.
+- The button opens a **prefilled Google Calendar template** for 07:30–08:00 IST
+  that morning: half an hour before the counter opens.
+
+**The site never writes to anyone's calendar.** The button is an ordinary link to
+`calendar.google.com`; following it opens Google's own compose screen and the
+person presses save themselves.
+
+If the chosen journey date's booking window has already opened, the widget says
+so and the button becomes a link to IRCTC instead of a pointless reminder.
+
+### Layout note for the opening screen
+
+The intro carries a title, two widgets and the fixed player bar. Once its content
+exceeds the viewport, `align-content: center` has no free space to distribute and
+the content pins to the top — so **`padding-top` is the lever** that moves things
+clear of the player, not `padding-bottom`. A `max-height: 860px` tier tightens
+type and spacing rather than hiding anything, since both the English lead and the
+Aadhaar footnote carry real information.
+
+Both widgets use a **dark scrim, not a translucent white wash**. White-on-white
+had almost no contrast against the daytime sky, and these cards sit on the one
+screen whose sky runs from pre-dawn navy through to full sunrise orange.
 
 ### 1. तैयारी — Preparation
 
@@ -461,6 +500,11 @@ Vitest against the pure modules:
   month boundary, the status switches to `during` at the exact moment the
   festival begins, rolls to the next year once it ends, reports `unknown` past
   the last tabulated year, and never returns a negative countdown
+- `travel.ts` — booking opens exactly 60 days before the journey at 08:00 IST
+  (anchor case: travelling 12 Nov 2026 means booking on 13 Sep 2026), holds
+  across a new-year boundary, is independent of the journey's time of day, the
+  reminder is exactly 30 minutes earlier, and the Google Calendar URL parses with
+  the right params and stamps (`20260913T020000Z/20260913T023000Z` = 07:30–08:00 IST)
 - `format.ts` — `m:ss` under an hour and `h:mm:ss` above, fractions truncate, and
   NaN or Infinity collapse to `0:00` rather than rendering "NaN:NaN" into the bar
   (YouTube reports NaN duration before metadata arrives)

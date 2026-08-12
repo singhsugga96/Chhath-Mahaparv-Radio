@@ -1,0 +1,42 @@
+---
+/**
+ * Train booking reminder, on the opening screen beneath the countdown.
+ *
+ * Everyone travels home for Chhath and the seats go in minutes, so the useful
+ * thing a page like this can do is tell you the one morning you must be awake
+ * for. Filled by boot.ts, for the same reason the countdown is: which festival
+ * is next depends on when the page is viewed, not when it was built.
+ */
+---
+
+<div class="travel" id="travel" hidden>
+  <p class="travel__label">घर पहुँचने की तैयारी</p>
+
+  <p class="travel__lead">
+    ट्रेन की बुकिंग यात्रा से <strong>60 दिन</strong> पहले, सुबह <strong>8 बजे</strong> खुलती है।
+  </p>
+
+  <div class="travel__row">
+    <label class="travel__field">
+      <span class="travel__field-name">यात्रा की तारीख़</span>
+      <select class="travel__select" id="travel-journey"></select>
+    </label>
+  </div>
+
+  <p class="travel__opens" id="travel-opens"></p>
+
+  <a
+    class="travel__cta"
+    id="travel-cta"
+    href="#"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    Google Calendar में रिमाइंडर जोड़ें
+  </a>
+
+  <p class="travel__note">
+    सुबह 7:30 बजे का रिमाइंडर — काउंटर खुलने से आधा घंटा पहले। पहले 15 मिनट सिर्फ़
+    आधार-सत्यापित उपयोगकर्ताओं के लिए हैं।
+  </p>
+</div>

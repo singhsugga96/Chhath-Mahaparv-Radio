@@ -5,6 +5,7 @@ import { TRACKS, type Track } from '../lib/playlist';
 import { sceneVars } from '../lib/scene-vars';
 import { stageVars } from '../lib/stages';
 import { discAt } from '../lib/sun';
+import { bookingOpensAt, bookingReminderEvent, googleCalendarUrl } from '../lib/travel';
 import { type PlayerHandle, createPlayer } from '../lib/youtube';
 
 /** SVG viewBox dimensions, matching Scene.astro. */
@@ -193,13 +194,7 @@ function startCountdown(): void {
 
   const labelEl = document.getElementById('countdown-label');
   const datesEl = document.getElementById('countdown-dates');
-  const summaryEl = document.getElementById('countdown-summary');
-  const fields = {
-    days: document.getElementById('cd-days'),
-    hours: document.getElementById('cd-hours'),
-    minutes: document.getElementById('cd-minutes'),
-    seconds: document.getElementById('cd-seconds'),
-  };
+  const daysEl = document.getElementById('cd-days');
 
   /** Formats the festival's date span in Hindi, in IST. */
   const formatSpan = (days: readonly number[]): string => {
@@ -230,30 +225,112 @@ function startCountdown(): void {
       const name = DAY_NAMES[status.dayIndex] ?? '';
       if (labelEl) labelEl.textContent = `आज ${name} है`;
       if (datesEl) datesEl.textContent = formatSpan(status.days);
-      if (summaryEl) summaryEl.textContent = `Chhath Puja is being observed today: ${name}.`;
       return;
     }
 
     root.classList.remove('is-live');
     if (labelEl) labelEl.textContent = 'अगली छठ पूजा';
 
-    const c = splitDuration(status.msRemaining);
-    if (fields.days) fields.days.textContent = String(c.days);
-    if (fields.hours) fields.hours.textContent = String(c.hours).padStart(2, '0');
-    if (fields.minutes) fields.minutes.textContent = String(c.minutes).padStart(2, '0');
-    if (fields.seconds) fields.seconds.textContent = String(c.seconds).padStart(2, '0');
-
+    const { days } = splitDuration(status.msRemaining);
+    if (daysEl) daysEl.textContent = String(days);
     if (datesEl) datesEl.textContent = formatSpan(status.days);
-    if (summaryEl) {
-      summaryEl.textContent = `Next Chhath Puja begins in ${c.days} days, on ${formatSpan(status.days)}.`;
-    }
   };
 
   tick();
-  window.setInterval(tick, 1000);
+  // Days only, so a per-second tick would be pure waste. A minute is plenty to
+  // roll the number over promptly at IST midnight.
+  window.setInterval(tick, 60_000);
 }
 
 startCountdown();
+
+/* --- Train booking reminder ----------------------------------------------- */
+
+/** Where to send people once booking is already open. */
+const IRCTC_URL = 'https://www.irctc.co.in/';
+
+/**
+ * Fills the travel widget: pick a journey date, see the morning booking opens,
+ * and take a prefilled Google Calendar reminder for 07:30 that day.
+ *
+ * The calendar link is a template only — following it opens Google's own compose
+ * screen and the person still presses save themselves. This site never writes to
+ * anyone's calendar.
+ */
+function startTravelReminder(): void {
+  const root = document.getElementById('travel');
+  const select = document.getElementById('travel-journey') as HTMLSelectElement | null;
+  const opensEl = document.getElementById('travel-opens');
+  const cta = document.getElementById('travel-cta') as HTMLAnchorElement | null;
+  if (!root || !select || !opensEl || !cta) return;
+
+  const status = chhathStatus(new Date());
+  if (status.kind === 'unknown') {
+    root.hidden = true;
+    return;
+  }
+
+  const nahayKhay = status.days[0]!;
+  const dayFormat = new Intl.DateTimeFormat('hi-IN', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'long',
+    timeZone: 'Asia/Kolkata',
+  });
+
+  /*
+   * Journey dates from ten days before Nahay Khay up to the day before it —
+   * for Chhath 2026 that is 3 to 12 November. People take long leave and travel
+   * home well ahead, so a three-day window was far too narrow. Every option is
+   * before the festival begins, since the point is to be home for it.
+   */
+  const EARLIEST_DAYS_BEFORE = 10;
+  const options = Array.from(
+    { length: EARLIEST_DAYS_BEFORE },
+    (_, i) => nahayKhay - (EARLIEST_DAYS_BEFORE - i) * 86_400_000,
+  );
+  select.innerHTML = '';
+  options.forEach((journeyMs, i) => {
+    const option = document.createElement('option');
+    option.value = String(journeyMs);
+    option.textContent = dayFormat.format(new Date(journeyMs));
+    // Default to arriving the day before Nahay Khay.
+    if (i === options.length - 1) option.selected = true;
+    select.append(option);
+  });
+
+  const render = (): void => {
+    const journeyMs = Number(select.value);
+    const opensMs = bookingOpensAt(journeyMs);
+    const alreadyOpen = Date.now() >= opensMs;
+
+    const opensLabel = new Intl.DateTimeFormat('hi-IN', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'Asia/Kolkata',
+    }).format(new Date(opensMs));
+
+    if (alreadyOpen) {
+      root.classList.add('is-open');
+      opensEl.innerHTML = 'बुकिंग <strong>खुल चुकी है</strong> — अभी देखें।';
+      cta.textContent = 'IRCTC पर बुक करें';
+      cta.href = IRCTC_URL;
+      return;
+    }
+
+    root.classList.remove('is-open');
+    opensEl.innerHTML = `बुकिंग खुलेगी <strong>${opensLabel}</strong>, सुबह 8 बजे।`;
+    cta.textContent = 'Google Calendar में रिमाइंडर जोड़ें';
+    cta.href = googleCalendarUrl(bookingReminderEvent(journeyMs));
+  };
+
+  select.addEventListener('change', render);
+  render();
+  root.hidden = false;
+}
+
+startTravelReminder();
 
 /* --- Player --------------------------------------------------------------- */
 
