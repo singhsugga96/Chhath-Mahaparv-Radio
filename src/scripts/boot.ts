@@ -1,5 +1,6 @@
+import { formatTime } from '../lib/format';
 import { STAGES, narrativeMinutes } from '../lib/narrative';
-import { TRACKS } from '../lib/playlist';
+import { TRACKS, type Track } from '../lib/playlist';
 import { sceneVars } from '../lib/scene-vars';
 import { discAt } from '../lib/sun';
 import { type PlayerHandle, createPlayer } from '../lib/youtube';
@@ -176,34 +177,81 @@ dots.forEach((dot) => {
 
 /* --- Player -------------------------------------------------------------- */
 
+const bar = document.querySelector<HTMLElement>('.player');
+const titleEl = document.getElementById('track-title');
+const artistEl = document.getElementById('track-artist');
+const coverEl = document.getElementById('cover-img') as HTMLImageElement | null;
+const fillEl = document.getElementById('player-fill');
+const timeEl = document.getElementById('player-time');
+const trackEl = document.getElementById('player-track');
+
 /**
  * Puts the player bar into its unavailable state. The journey keeps working:
  * the ritual content is server-rendered HTML and is the product's floor.
  */
 function showUnavailable(): void {
-  const title = document.getElementById('track-title');
-  const artist = document.getElementById('track-artist');
   const controls = document.getElementById('player-controls');
-  if (title) title.textContent = 'संगीत अभी उपलब्ध नहीं है';
-  if (artist) artist.textContent = '';
+  const scrub = document.querySelector<HTMLElement>('.player__scrub');
+  if (titleEl) titleEl.textContent = 'संगीत अभी उपलब्ध नहीं है';
+  if (artistEl) artistEl.textContent = '';
   if (controls) controls.hidden = true;
+  if (scrub) scrub.hidden = true;
+  bar?.classList.add('is-paused');
 }
 
-/** Wires the play/pause and next buttons to a live player handle. */
+/** Shows a track's text and swaps in its YouTube thumbnail as the cover. */
+function showTrack(track: Track): void {
+  if (titleEl) titleEl.textContent = track.title;
+  if (artistEl) artistEl.textContent = track.artist;
+  if (coverEl) {
+    coverEl.hidden = false;
+    // mqdefault is 320x180 and always present; the cover crops it to a circle.
+    coverEl.src = `https://i.ytimg.com/vi/${track.videoId}/mqdefault.jpg`;
+    coverEl.onerror = () => {
+      coverEl.hidden = true;
+    };
+  }
+}
+
+/** Paints the progress line and the time readout. */
+function showProgress(handle: PlayerHandle): void {
+  const p = handle.progress();
+  if (!p) return;
+  const fraction = p.duration > 0 ? p.elapsed / p.duration : 0;
+  if (fillEl) fillEl.style.width = `${Math.min(100, fraction * 100).toFixed(2)}%`;
+  if (timeEl) {
+    timeEl.textContent = `${formatTime(p.elapsed)} / ${formatTime(p.duration)}`;
+  }
+  trackEl?.setAttribute('aria-valuetext', `${formatTime(p.elapsed)} of ${formatTime(p.duration)}`);
+}
+
+/** Wires the transport controls and the seek bar to a live player handle. */
 function bindControls(handle: PlayerHandle): void {
   const toggle = document.getElementById('btn-toggle');
-  const next = document.getElementById('btn-next');
-  let playing = true;
 
   toggle?.addEventListener('click', () => {
-    playing = !playing;
-    if (playing) handle.play();
+    // Drive off the class rather than a local flag, so the button stays correct
+    // when YouTube changes state on its own (ads, buffering stalls, track ends).
+    if (bar?.classList.contains('is-paused')) handle.play();
     else handle.pause();
-    toggle.textContent = playing ? '❙❙' : '▶';
-    toggle.setAttribute('aria-label', playing ? 'Pause' : 'Play');
   });
 
-  next?.addEventListener('click', () => handle.next());
+  document.getElementById('btn-next')?.addEventListener('click', () => handle.next());
+  document.getElementById('btn-prev')?.addEventListener('click', () => handle.previous());
+
+  trackEl?.addEventListener('click', (event) => {
+    const rect = trackEl.getBoundingClientRect();
+    if (rect.width === 0) return;
+    handle.seek(((event as MouseEvent).clientX - rect.left) / rect.width);
+    showProgress(handle);
+  });
+
+  /*
+   * setInterval rather than requestAnimationFrame: rAF is suspended while the
+   * document is hidden, and a stalled progress line is worse than a coarse one.
+   * 500ms is imperceptible on a 4px bar showing whole seconds.
+   */
+  window.setInterval(() => showProgress(handle), 500);
 }
 
 const gate = document.getElementById('gate');
@@ -220,11 +268,12 @@ gate?.addEventListener(
       const handle = await createPlayer({
         mount,
         tracks: TRACKS,
-        onTrackChange: (track) => {
-          const title = document.getElementById('track-title');
-          const artist = document.getElementById('track-artist');
-          if (title) title.textContent = track.title;
-          if (artist) artist.textContent = track.artist;
+        onTrackChange: showTrack,
+        onPlayingChange: (playing) => {
+          bar?.classList.toggle('is-paused', !playing);
+          document
+            .getElementById('btn-toggle')
+            ?.setAttribute('aria-label', playing ? 'Pause' : 'Play');
         },
         onUnavailable: showUnavailable,
       });

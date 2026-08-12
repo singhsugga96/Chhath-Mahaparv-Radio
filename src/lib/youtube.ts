@@ -1,25 +1,39 @@
 import { type Track, playableTracks, shuffle } from './playlist';
 
+/** Elapsed and total seconds for the current track. */
+export interface Progress {
+  elapsed: number;
+  duration: number;
+}
+
 /** Controls for the running player. */
 export interface PlayerHandle {
   play(): void;
   pause(): void;
   /** Advances to the next track in the shuffled order, wrapping at the end. */
   next(): void;
+  /** Goes back one track in the shuffled order, wrapping at the start. */
+  previous(): void;
+  /** Jumps to a fraction (0..1) of the current track. */
+  seek(fraction: number): void;
   /** The track currently loaded, or null if nothing is playable. */
   current(): Track | null;
+  /** Elapsed and total seconds, or null before metadata is available. */
+  progress(): Progress | null;
   /** Tears the player down and releases the iframe. */
   destroy(): void;
 }
 
 /** Wiring for {@link createPlayer}. */
 export interface PlayerOptions {
-  /** Element the iframe replaces. Must be at least 200x200 and unobscured. */
+  /** Element the iframe replaces. */
   mount: HTMLElement;
   /** The full rotation. May be empty. */
   tracks: readonly Track[];
   /** Called whenever a new track starts loading. */
   onTrackChange: (track: Track) => void;
+  /** Called when playback starts or stops, so the UI can sync its own state. */
+  onPlayingChange: (playing: boolean) => void;
   /** Called when no track in the rotation can be played. */
   onUnavailable: () => void;
 }
@@ -72,7 +86,7 @@ function loadApi(): Promise<void> {
  * @throws If the IFrame API script cannot be loaded.
  */
 export async function createPlayer(options: PlayerOptions): Promise<PlayerHandle> {
-  const { mount, tracks, onTrackChange, onUnavailable } = options;
+  const { mount, tracks, onTrackChange, onPlayingChange, onUnavailable } = options;
 
   await loadApi();
 
@@ -92,12 +106,13 @@ export async function createPlayer(options: PlayerOptions): Promise<PlayerHandle
     return order.length > 0;
   };
 
-  const advance = (): void => {
+  /** Steps the rotation by `delta`, wrapping in both directions. */
+  const step = (delta: number): void => {
     if (order.length === 0) {
       onUnavailable();
       return;
     }
-    index = (index + 1) % order.length;
+    index = (index + delta + order.length) % order.length;
     const track = currentTrack();
     if (!track) {
       onUnavailable();
@@ -107,6 +122,8 @@ export async function createPlayer(options: PlayerOptions): Promise<PlayerHandle
     player?.loadVideoById(track.videoId);
   };
 
+  const advance = (): void => step(1);
+
   const first = currentTrack();
   if (!first) {
     onUnavailable();
@@ -114,7 +131,10 @@ export async function createPlayer(options: PlayerOptions): Promise<PlayerHandle
       play: () => {},
       pause: () => {},
       next: () => {},
+      previous: () => {},
+      seek: () => {},
       current: () => null,
+      progress: () => null,
       destroy: () => {},
     };
   }
@@ -137,7 +157,9 @@ export async function createPlayer(options: PlayerOptions): Promise<PlayerHandle
         player.playVideo();
       },
       onStateChange: (event: { data: number }) => {
-        // 0 === ended
+        // 1 playing, 2 paused, 0 ended
+        if (event.data === 1) onPlayingChange(true);
+        if (event.data === 2) onPlayingChange(false);
         if (event.data === 0) advance();
       },
       onError: (event: { data: number }) => {
@@ -164,7 +186,20 @@ export async function createPlayer(options: PlayerOptions): Promise<PlayerHandle
     play: () => player?.playVideo(),
     pause: () => player?.pauseVideo(),
     next: advance,
+    previous: () => step(-1),
+    seek: (fraction) => {
+      const duration = player?.getDuration?.() ?? 0;
+      if (duration > 0) {
+        player.seekTo(Math.min(1, Math.max(0, fraction)) * duration, true);
+      }
+    },
     current: currentTrack,
+    progress: () => {
+      const duration = player?.getDuration?.() ?? 0;
+      const elapsed = player?.getCurrentTime?.() ?? 0;
+      // Duration is 0 until metadata arrives; report null rather than 0/0.
+      return duration > 0 ? { elapsed, duration } : null;
+    },
     destroy: () => player?.destroy(),
   };
 }

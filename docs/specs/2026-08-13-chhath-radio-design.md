@@ -299,11 +299,41 @@ from the supplied playlist (see Playlist below).
 user gesture, so the intro section carries the tap target. It is the title screen,
 so the requirement costs nothing.
 
-**Player visibility.** YouTube's terms expect the player visible, unobscured, and
-at least 200×200. The iframe is therefore the artwork tile in a persistent
-bottom-anchored bar — a 200×200 unobscured square that stays put through the
-whole scroll. On viewports under 480px wide the bar collapses to the 200×200
-player plus title only, dropping the artist line rather than shrinking the video.
+**Player appearance and visibility.** The bar is modelled on saloon.wtf's, whose
+measurements were taken directly from the live site: a `border-radius: 999px`
+pill, `white/10` fill with `blur(40px) saturate(1.5)`, a 1px `white/20` border,
+16px gap, and 12/20/12/12 padding — 528×107 at desktop. Inside it: an 80×80
+**circular cover that rotates once every 8 seconds** like a record, the title and
+artist, a 4px fully-rounded progress line on a `white/20` track, a `m:ss` time
+readout, then a 36×36 ghost previous button, a 44×44 **solid white** play/pause
+button with a black glyph, and a 36×36 ghost next button.
+
+This **reverses the earlier decision** to make the iframe itself the artwork tile:
+
+- The cover is an 80px circle, far smaller than the 200×200 an embed needs, so the
+  iframe cannot serve as it. The cover is the video's own thumbnail from
+  `i.ytimg.com/vi/<id>/mqdefault.jpg`, cropped to a circle.
+- The iframe is therefore parked off-view at its real 640×360 inside
+  `.player__video` — translated out of the viewport, `opacity: 0`,
+  `pointer-events: none`. It is deliberately **not** `display: none`, which can
+  stop the IFrame API initialising and makes duration misreport.
+- **This is a deliberate trade-off against YouTube's terms**, which expect the
+  player visible and unobscured. It is the arrangement saloon.wtf itself uses —
+  its live page carries a real `youtube.com/embed/...?controls=0&disablekb=1`
+  iframe parked out of sight. Recorded here as a known, chosen risk rather than
+  an oversight, so it can be revisited.
+
+The bar starts in its paused state and only clears it when the API reports
+playback actually began, so a refused autoplay shows a play button rather than
+claiming to play. Under 480px the record shrinks to 56px and the time readout is
+dropped before the title is allowed to truncate.
+
+Seeking is supported: the progress track is a real `<button>`, so it is keyboard
+reachable, and a click maps its x-position to a fraction of the duration.
+
+Progress is polled on a 500ms `setInterval` rather than `requestAnimationFrame`,
+because rAF is suspended while the document is hidden and a frozen progress line
+is worse than a coarse one.
 
 **Shuffle.** Fisher–Yates per visit, so repeat visits do not open on the same song.
 
@@ -353,6 +383,9 @@ Vitest against the pure modules:
   section boundaries, correct interpolation between sections, clamped at both ends
 - `playlist.ts` — shuffle is a permutation that never drops or duplicates, is
   deterministic for a given rand, and dead ids are excluded
+- `format.ts` — `m:ss` under an hour and `h:mm:ss` above, fractions truncate, and
+  NaN or Infinity collapse to `0:00` rather than rendering "NaN:NaN" into the bar
+  (YouTube reports NaN duration before metadata arrives)
 
 `youtube.ts` and DOM wiring get no unit tests — mocking the IFrame API tests the
 mock. They get a manual smoke pass: load, play, skip, a deliberately dead id, and

@@ -1,22 +1,72 @@
 ---
 /**
- * The persistent now-playing bar.
+ * The now-playing bar: a frosted pill with a slowly spinning circular cover,
+ * the track text, a thin progress line, and prev / play / next on the right.
  *
  * Lives outside the scrolling sections and is never re-mounted, so scrolling the
- * whole page does not interrupt playback. The player mount is a 200x200 square
- * that the YouTube iframe replaces, making the video itself the artwork tile —
- * visible and unobscured, as YouTube's terms require.
+ * whole page does not interrupt playback.
+ *
+ * The YouTube iframe is NOT the artwork here — the cover is a circle far smaller
+ * than the 200px the embed needs, so the iframe is parked off-view in
+ * `.player__video` and the cover uses the video's thumbnail image instead. This
+ * is the arrangement saloon.wtf uses. It is worth knowing that YouTube's terms
+ * expect the player to be visible and unobscured, so this is a deliberate
+ * trade-off in favour of the design rather than an oversight.
  */
 ---
 
-<section class="player" aria-label="Now playing">
-  <div class="player__mount" id="player-mount"></div>
+<!-- Parked off-view. Real size, never display:none, so the API stays healthy. -->
+<div class="player__video" id="player-video" aria-hidden="true">
+  <div id="player-mount"></div>
+</div>
+
+<!--
+  Starts in the paused state on purpose: if autoplay is refused despite the
+  gate's gesture, the button correctly reads "play" instead of claiming to be
+  playing. onPlayingChange clears it the moment playback actually begins.
+-->
+<section class="player is-paused" aria-label="Now playing">
+  <div class="player__cover" id="player-cover">
+    <img id="cover-img" alt="" width="80" height="80" />
+  </div>
+
   <div class="player__meta">
-    <h2 class="player__title" id="track-title" aria-live="polite">संगीत तैयार है</h2>
+    <p class="player__title" id="track-title" aria-live="polite">संगीत तैयार है</p>
     <p class="player__artist" id="track-artist"></p>
-    <div class="player__controls" id="player-controls">
-      <button class="control" id="btn-toggle" type="button" aria-label="Pause">❙❙</button>
-      <button class="control" id="btn-next" type="button" aria-label="Next track">▶❙</button>
+
+    <div class="player__scrub">
+      <button
+        class="player__track"
+        id="player-track"
+        type="button"
+        aria-label="Seek within track"
+      >
+        <span class="player__fill" id="player-fill"></span>
+      </button>
+      <span class="player__time" id="player-time">0:00 / 0:00</span>
     </div>
+  </div>
+
+  <div class="player__controls" id="player-controls">
+    <button class="control control--ghost" id="btn-prev" type="button" aria-label="Previous track">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M7 5v14H5V5h2zm12 0v14L8.5 12 19 5z" fill="currentColor"></path>
+      </svg>
+    </button>
+
+    <button class="control control--primary" id="btn-toggle" type="button" aria-label="Play">
+      <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M8 5h3v14H8V5zm5 0h3v14h-3V5z" fill="currentColor"></path>
+      </svg>
+      <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M8 5l11 7-11 7V5z" fill="currentColor"></path>
+      </svg>
+    </button>
+
+    <button class="control control--ghost" id="btn-next" type="button" aria-label="Next track">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M17 5v14h2V5h-2zM5 5v14l10.5-7L5 5z" fill="currentColor"></path>
+      </svg>
+    </button>
   </div>
 </section>
