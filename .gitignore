@@ -7,3 +7,8 @@ dist/
 
 # Design spec stays local rather than published with the code.
 docs/specs/
+
+# Local environment. .env.example is committed as the template.
+.env
+.env.*
+!.env.example

@@ -1,5 +1,7 @@
 ---
+import Analytics from '../components/Analytics.astro';
 import EntryGate from '../components/EntryGate.astro';
+import Follow from '../components/Follow.astro';
 import PlaylistLink from '../components/PlaylistLink.astro';
 import Player from '../components/Player.astro';
 import Scene from '../components/Scene.astro';
@@ -22,12 +24,14 @@ const description =
     <meta name="color-scheme" content="dark" />
     <link rel="preconnect" href="https://www.youtube.com" />
     <link rel="preconnect" href="https://i.ytimg.com" />
+    <Analytics />
   </head>
   <body>
     <h1 class="sr-only">{title}</h1>
 
     <Scene />
 
+    <Follow />
     <PlaylistLink />
 
     <main class="journey">

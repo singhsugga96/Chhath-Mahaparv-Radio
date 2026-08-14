@@ -1,0 +1,34 @@
+---
+import { resolveMeasurementId } from '../lib/analytics';
+
+/**
+ * Google Analytics 4, via gtag.js.
+ *
+ * Production gets the site's property by default, so a deploy cannot silently
+ * forget to enable it. Development renders nothing at all, so local work never
+ * appears in the reports and `npm run dev` makes no requests to Google.
+ * `PUBLIC_GA_ID` overrides both, and a malformed value breaks the build rather
+ * than producing a site that records nothing.
+ */
+const gaId = resolveMeasurementId(import.meta.env.PUBLIC_GA_ID, import.meta.env.PROD);
+---
+
+{
+  gaId && (
+    <>
+      <script
+        is:inline
+        async
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+      />
+      <script is:inline define:vars={{ gaId }}>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          window.dataLayer.push(arguments);
+        }
+        gtag('js', new Date());
+        gtag('config', gaId);
+      </script>
+    </>
+  )
+}
