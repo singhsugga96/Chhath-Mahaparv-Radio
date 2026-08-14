@@ -219,13 +219,10 @@ function createAutoScroll(): () => void {
 
   const atBottom = (): boolean => window.scrollY >= maxScroll() - 2;
 
-  const hint = document.getElementById('autoscroll-hint');
-
   const stop = (): void => {
     running = false;
     if (rafId) cancelAnimationFrame(rafId);
     rafId = 0;
-    if (hint) hint.hidden = true;
   };
 
   const step = (ts: number): void => {
@@ -254,7 +251,6 @@ function createAutoScroll(): () => void {
     lastTs = 0;
     // Resync to wherever the reader actually left the page.
     position = window.scrollY;
-    if (hint) hint.hidden = false;
     rafId = requestAnimationFrame(step);
   };
 
@@ -286,7 +282,6 @@ function createAutoScroll(): () => void {
       started,
       running,
       armed: idleTimer !== 0,
-      hintHidden: hint?.hidden,
     });
 
     // Lets the loop be driven by hand where rAF is unavailable.
