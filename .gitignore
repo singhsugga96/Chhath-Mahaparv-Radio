@@ -12,3 +12,8 @@ docs/specs/
 .env
 .env.*
 !.env.example
+
+# Firebase CLI artefacts: deploy logs and its local cache.
+firebase-debug.log
+firebase-debug.*.log
+.firebase/
