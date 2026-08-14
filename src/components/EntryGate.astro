@@ -1,16 +1,19 @@
 ---
+import { BRAND, BRAND_HI } from '../lib/brand';
+
 /**
- * The entry veil.
+ * The entry veil, and the site's wordmark.
  *
  * Browsers block audio autoplay and the IFrame API needs a genuine user gesture,
- * so an interaction is unavoidable. Rather than apologising for it, it is the
- * title screen — the threshold into the ghat.
+ * so an interaction is unavoidable. Rather than apologising for it, this is the
+ * title screen: the brand, then the threshold into the ghat.
  */
 ---
 
 <button class="gate" id="gate" type="button">
   <span>
-    <span class="gate__title">छठ पूजा</span>
+    <span class="gate__title">{BRAND_HI}</span>
+    <span class="gate__brand">{BRAND}</span>
     <p class="gate__hint">शुरू करने के लिए स्पर्श करें · tap to begin</p>
   </span>
 </button>

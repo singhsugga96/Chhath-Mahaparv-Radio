@@ -4,6 +4,7 @@ import {
   SHASHTHI_DATES,
   chhathStatus,
   festivalDays,
+  istDateString,
   splitDuration,
 } from './chhath';
 
@@ -52,6 +53,39 @@ describe('festivalDays', () => {
     for (let i = 1; i < days.length; i++) {
       expect(days[i]! - days[i - 1]!).toBe(86_400_000);
     }
+  });
+});
+
+describe('istDateString', () => {
+  /*
+   * The bug this exists to prevent: these instants are midnight IST, which is
+   * 18:30 UTC the previous day. Formatting with toISOString would report every
+   * festival date a day early, which is invisible in a countdown and wrong in
+   * structured data.
+   */
+  it('reports the IST calendar date, not the UTC one', () => {
+    const days = festivalDays('2026-11-15');
+    expect(days.map(istDateString)).toEqual([
+      '2026-11-13',
+      '2026-11-14',
+      '2026-11-15',
+      '2026-11-16',
+    ]);
+  });
+
+  it('does not agree with naive UTC formatting, which is the whole point', () => {
+    const midnightIst = festivalDays('2026-11-15')[0]!;
+    expect(new Date(midnightIst).toISOString().slice(0, 10)).toBe('2026-11-12');
+    expect(istDateString(midnightIst)).toBe('2026-11-13');
+  });
+
+  it('holds across a month boundary', () => {
+    expect(festivalDays('2027-11-04').map(istDateString)).toEqual([
+      '2027-11-02',
+      '2027-11-03',
+      '2027-11-04',
+      '2027-11-05',
+    ]);
   });
 });
 

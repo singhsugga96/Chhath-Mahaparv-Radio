@@ -1,0 +1,139 @@
+---
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  BRAND,
+  BRAND_HI,
+  CREATOR_HANDLE,
+  CREATOR_URL,
+  DESCRIPTION,
+  LOCALE,
+  TAGLINE,
+  documentTitle,
+} from '../lib/brand';
+import { SHASHTHI_DATES, festivalDays, istDateString } from '../lib/chhath';
+
+/**
+ * Everything that goes in <head> for search engines and share previews.
+ *
+ * Canonical and absolute share URLs need the real origin, which comes from
+ * Astro's `site` config via PUBLIC_SITE_URL. When it is unset those tags are
+ * omitted entirely rather than emitted with a guessed domain, because a wrong
+ * canonical actively harms indexing while a missing one merely does nothing.
+ */
+
+const title = documentTitle();
+const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : null;
+
+/*
+ * The share image, referenced only if it is actually on disk. A tag pointing at
+ * a missing file gives every platform a broken preview, which is worse than
+ * having no image at all.
+ *
+ * Resolved from the build's working directory rather than import.meta.url, which
+ * Astro rewrites when it compiles the component and so does not point at this
+ * source file.
+ */
+const OG_FILE = 'og.jpg';
+const hasOgImage = existsSync(join(process.cwd(), 'public', OG_FILE));
+const ogImage = canonical && hasOgImage ? new URL(`/${OG_FILE}`, Astro.site).href : null;
+
+/** Next festival on record, for the structured data. */
+const next = SHASHTHI_DATES[0]!;
+const days = festivalDays(next.date);
+
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: BRAND,
+    alternateName: BRAND_HI,
+    description: DESCRIPTION,
+    inLanguage: 'hi',
+    ...(canonical ? { url: canonical } : {}),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: `${BRAND}: ${TAGLINE}`,
+    description: DESCRIPTION,
+    inLanguage: 'hi',
+    datePublished: '2026-08-14',
+    author: {
+      '@type': 'Person',
+      name: CREATOR_HANDLE,
+      url: CREATOR_URL,
+    },
+    about: {
+      '@type': 'Thing',
+      name: 'Chhath Puja',
+      alternateName: 'छठ पूजा',
+      description:
+        'A four day Hindu festival of the Bihar, Jharkhand, eastern Uttar Pradesh ' +
+        'and Madhesh region, in which arghya is offered to the setting and the ' +
+        'rising sun.',
+    },
+    ...(canonical ? { url: canonical, mainEntityOfPage: canonical } : {}),
+    ...(ogImage ? { image: ogImage } : {}),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Festival',
+    name: `Chhath Puja ${next.year}`,
+    alternateName: 'छठ महापर्व',
+    description:
+      'Chhath Puja, observed over four days: Nahay Khay, Kharna, Sandhya Arghya ' +
+      'and Usha Arghya.',
+    startDate: istDateString(days[0]!),
+    endDate: istDateString(days[3]!),
+    location: {
+      '@type': 'Place',
+      name: 'Bihar, India',
+      address: {
+        '@type': 'PostalAddress',
+        addressRegion: 'Bihar',
+        addressCountry: 'IN',
+      },
+    },
+  },
+];
+---
+
+<title>{title}</title>
+<meta name="description" content={DESCRIPTION} />
+
+{canonical && <link rel="canonical" href={canonical} />}
+
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<meta name="theme-color" content="#0b1026" />
+<meta name="color-scheme" content="dark" />
+<meta name="author" content={CREATOR_HANDLE} />
+
+<!-- Share previews -->
+<meta property="og:type" content="article" />
+<meta property="og:site_name" content={BRAND} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={DESCRIPTION} />
+<meta property="og:locale" content={LOCALE} />
+{canonical && <meta property="og:url" content={canonical} />}
+{
+  ogImage && (
+    <>
+      <meta property="og:image" content={ogImage} />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:image:alt" content={`${BRAND}: a ghat at sunrise`} />
+    </>
+  )
+}
+
+<meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={DESCRIPTION} />
+{ogImage && <meta name="twitter:image" content={ogImage} />}
+
+<!-- Icons. SVG only, which every current browser supports. -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/favicon.svg" />
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />

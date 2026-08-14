@@ -6,12 +6,10 @@ import PlaylistLink from '../components/PlaylistLink.astro';
 import Player from '../components/Player.astro';
 import Scene from '../components/Scene.astro';
 import Section from '../components/Section.astro';
+import Seo from '../components/Seo.astro';
 import { SECTIONS } from '../content/ritual';
+import { BRAND, BRAND_HI, TAGLINE } from '../lib/brand';
 import '../styles/global.css';
-
-const title = 'छठ पूजा · How Chhath Puja is done';
-const description =
-  'A scrolling guide to Chhath Puja. The preparation, the four days, the prasad, and what makes the festival different, with the sky moving from before dawn to the closing sunrise as you read.';
 ---
 
 <!doctype html>
@@ -19,15 +17,18 @@ const description =
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <meta name="color-scheme" content="dark" />
+    <Seo />
     <link rel="preconnect" href="https://www.youtube.com" />
     <link rel="preconnect" href="https://i.ytimg.com" />
     <Analytics />
   </head>
   <body>
-    <h1 class="sr-only">{title}</h1>
+    <!--
+      The page's only h1. Visually hidden because the entry screen carries the
+      wordmark as art, but it still has to state the brand and the subject for
+      search engines and screen readers.
+    -->
+    <h1 class="sr-only">{BRAND_HI} · {BRAND}: {TAGLINE}</h1>
 
     <Scene />
 

@@ -10,12 +10,16 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "firebase": "firebase",
+    "deploy:preview": "npm run build && firebase hosting:channel:deploy preview",
+    "deploy": "npm test && npm run build && firebase deploy --only hosting"
   },
   "license": "ISC",
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "astro": "^7.2.1",
+    "firebase-tools": "^15.27.0",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10"
   }

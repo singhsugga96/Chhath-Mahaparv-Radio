@@ -122,6 +122,20 @@ export function chhathStatus(now: Date): ChhathStatus {
   return { kind: 'unknown' };
 }
 
+/**
+ * Formats an instant as a `YYYY-MM-DD` calendar date **in IST**.
+ *
+ * Not `toISOString().slice(0, 10)`: these instants are midnight IST, which is
+ * 18:30 UTC the previous day, so formatting in UTC reports every festival date a
+ * day early. That is invisible in a countdown and wrong in structured data.
+ *
+ * @param ms Epoch milliseconds.
+ * @returns The IST calendar date, e.g. `2026-11-13`.
+ */
+export function istDateString(ms: number): string {
+  return new Date(ms + IST_OFFSET_MINUTES * 60_000).toISOString().slice(0, 10);
+}
+
 /** A countdown broken into whole units. */
 export interface Countdown {
   days: number;
