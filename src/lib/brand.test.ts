@@ -5,13 +5,24 @@ import {
   CREATOR_HANDLE,
   CREATOR_URL,
   DESCRIPTION,
+  SEARCH_NAME,
   documentTitle,
 } from './brand';
 
 describe('brand constants', () => {
-  it('names the site Chhath Mahaparv Radio', () => {
+  it('keeps Chhath Mahaparv Radio as the on-page wordmark', () => {
     expect(BRAND).toBe('Chhath Mahaparv Radio');
     expect(BRAND_HI).toBe('छठ महापर्व रेडियो');
+  });
+
+  /*
+   * The searchable name is deliberately different from the wordmark: "Chhath
+   * Puja" is what people type. If these ever become the same string, that is a
+   * decision to make on purpose, not by accident.
+   */
+  it('uses Chhath Puja Radio as the searchable name', () => {
+    expect(SEARCH_NAME).toBe('Chhath Puja Radio');
+    expect(SEARCH_NAME).not.toBe(BRAND);
   });
 
   it('points the creator link at the handle it names', () => {
@@ -30,8 +41,9 @@ describe('DESCRIPTION', () => {
     expect(DESCRIPTION.length).toBeLessThanOrEqual(165);
   });
 
-  it('mentions what the site is about', () => {
-    expect(DESCRIPTION).toMatch(/Chhath/);
+  it('leads with the searchable name and mentions what the site is about', () => {
+    expect(DESCRIPTION.startsWith(SEARCH_NAME)).toBe(true);
+    expect(DESCRIPTION).toMatch(/geet/);
     expect(DESCRIPTION).toMatch(/arghya/);
   });
 
@@ -43,8 +55,8 @@ describe('DESCRIPTION', () => {
 });
 
 describe('documentTitle', () => {
-  it('leads with the brand so truncation cannot cut it', () => {
-    expect(documentTitle().startsWith(BRAND)).toBe(true);
+  it('leads with the searchable name so truncation cannot cut it', () => {
+    expect(documentTitle().startsWith(SEARCH_NAME)).toBe(true);
   });
 
   /*

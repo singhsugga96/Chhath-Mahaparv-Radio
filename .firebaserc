@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "chhath-mahaparv-2026"
-  }
+    "default": "chhath-mahaparv-2026",
+    "chhath-mahaparv": "chhath-mahaparv-2026"
+  },
+  "targets": {},
+  "etags": {}
 }

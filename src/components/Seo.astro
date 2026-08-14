@@ -8,6 +8,7 @@ import {
   CREATOR_URL,
   DESCRIPTION,
   LOCALE,
+  SEARCH_NAME,
   TAGLINE,
   documentTitle,
 } from '../lib/brand';
@@ -46,8 +47,9 @@ const structuredData = [
   {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: BRAND,
-    alternateName: BRAND_HI,
+    name: SEARCH_NAME,
+    // Both names carried, so either phrase can match.
+    alternateName: [BRAND, BRAND_HI],
     description: DESCRIPTION,
     inLanguage: 'hi',
     ...(canonical ? { url: canonical } : {}),
@@ -55,7 +57,7 @@ const structuredData = [
   {
     '@context': 'https://schema.org',
     '@type': 'Article',
-    headline: `${BRAND}: ${TAGLINE}`,
+    headline: `${SEARCH_NAME}: ${TAGLINE}`,
     description: DESCRIPTION,
     inLanguage: 'hi',
     datePublished: '2026-08-14',
@@ -111,7 +113,7 @@ const structuredData = [
 
 <!-- Share previews -->
 <meta property="og:type" content="article" />
-<meta property="og:site_name" content={BRAND} />
+<meta property="og:site_name" content={SEARCH_NAME} />
 <meta property="og:title" content={title} />
 <meta property="og:description" content={DESCRIPTION} />
 <meta property="og:locale" content={LOCALE} />
@@ -122,7 +124,7 @@ const structuredData = [
       <meta property="og:image" content={ogImage} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content={`${BRAND}: a ghat at sunrise`} />
+      <meta property="og:image:alt" content={`${SEARCH_NAME}: a ghat at sunrise`} />
     </>
   )
 }
