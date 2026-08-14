@@ -222,6 +222,24 @@ body {
 
 /* --- Follow link ---------------------------------------------------------- */
 
+/*
+ * A highlight travels around the badge's edge.
+ *
+ * Registering the angle as a typed custom property is what makes it animatable:
+ * a plain --angle is treated as a string and would jump from 0 to 360 rather
+ * than sweeping. Where @property is unsupported the gradient still renders, just
+ * without moving, which is a perfectly acceptable badge.
+ *
+ * The pill is wider than it is tall, so the ring cannot simply be rotated with a
+ * transform: that would swing a long rectangle outside the badge. Rotating the
+ * gradient inside a fixed ring is what keeps it on the edge.
+ */
+@property --badge-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
 /* Fixed top left, opposite the playlist link, so the two corners balance. */
 .follow {
   position: fixed;
@@ -238,6 +256,56 @@ body {
   border: 1px solid rgb(255 255 255 / 0.2);
   color: var(--text);
   text-decoration: none;
+  animation: badge-glow 5s ease-in-out infinite;
+}
+
+/*
+ * The travelling ring. Drawn just outside the badge and masked so only the 2px
+ * band shows: the two masks overlap everywhere except the padding, and
+ * excluding one from the other leaves a ring.
+ */
+.follow::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  z-index: -1;
+  border-radius: 999px;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--badge-angle),
+    rgb(255 176 58 / 0) 0deg,
+    rgb(255 176 58 / 0) 190deg,
+    rgb(255 176 58 / 0.7) 270deg,
+    #fff3d4 315deg,
+    rgb(255 122 60 / 0.8) 345deg,
+    rgb(255 176 58 / 0) 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: badge-sweep 5s linear infinite;
+}
+
+@keyframes badge-sweep {
+  to {
+    --badge-angle: 360deg;
+  }
+}
+
+/* Glow breathes in time with the sweep rather than on its own schedule. */
+@keyframes badge-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgb(255 176 58 / 0.12);
+  }
+  50% {
+    box-shadow: 0 0 22px rgb(255 176 58 / 0.4);
+  }
 }
 
 .follow:hover {
@@ -1083,8 +1151,20 @@ body {
   .pour,
   .ring,
   .cloud,
-  .player__cover {
+  .player__cover,
+  .follow,
+  .follow::before {
     animation: none;
+  }
+
+  /*
+   * The badge keeps a ring and a glow, just still ones. Held at an angle that
+   * puts the highlight along the top edge, and given the glow the animation
+   * would otherwise have supplied.
+   */
+  .follow {
+    --badge-angle: 300deg;
+    box-shadow: 0 0 16px rgb(255 176 58 / 0.26);
   }
 
   /*
