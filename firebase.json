@@ -16,12 +16,31 @@
         ]
       },
       {
-        "comment": "The page itself must never be cached, or a deploy would not reach anyone already holding a copy.",
+        "comment": "The page must never be cached, or a deploy would not reach anyone already holding a copy. Matched on the REQUEST path, so '/' and '/index.html' both need covering: a rule for '/index.html' alone left the site serving max-age=3600, verified against the live deploy.",
+        "source": "/",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, must-revalidate"
+          }
+        ]
+      },
+      {
         "source": "/index.html",
         "headers": [
           {
             "key": "Cache-Control",
-            "value": "no-cache"
+            "value": "no-cache, must-revalidate"
+          }
+        ]
+      },
+      {
+        "comment": "robots and sitemap change rarely but should not be pinned for an hour.",
+        "source": "/*.@(txt|xml)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=600"
           }
         ]
       }

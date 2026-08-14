@@ -3,6 +3,7 @@ import { formatTime } from '../lib/format';
 import { STAGES, narrativeMinutes } from '../lib/narrative';
 import { TRACKS, type Track } from '../lib/playlist';
 import { sceneVars } from '../lib/scene-vars';
+import { isResumable, parseSession, resumePoint } from '../lib/session';
 import { stageVars } from '../lib/stages';
 import { discAt } from '../lib/sun';
 import { bookingOpensAt, bookingReminderEvent, googleCalendarUrl } from '../lib/travel';
@@ -386,6 +387,48 @@ startCountdown();
 
 /* --- Train booking reminder ----------------------------------------------- */
 
+/* --- Resuming a discarded session ---------------------------------------- */
+
+/**
+ * Storage key for the listening position.
+ *
+ * localStorage rather than sessionStorage: a discarded tab may come back as a
+ * fresh session, which would lose a sessionStorage entry precisely when it is
+ * needed most.
+ */
+const SESSION_KEY = 'chhath:position';
+
+/** The session found at load, if any. Read once, before anything overwrites it. */
+const restored = (() => {
+  try {
+    const saved = parseSession(localStorage.getItem(SESSION_KEY));
+    return saved && isResumable(saved, Date.now()) ? saved : null;
+  } catch {
+    // Private browsing can make localStorage throw on access.
+    return null;
+  }
+})();
+
+/** Writes the current position, so a discarded tab can pick up where it was. */
+function saveSession(handle: PlayerHandle): void {
+  const track = handle.current();
+  const progress = handle.progress();
+  if (!track || !progress) return;
+  try {
+    localStorage.setItem(
+      SESSION_KEY,
+      JSON.stringify({
+        videoId: track.videoId,
+        elapsed: progress.elapsed,
+        scrollY: Math.round(window.scrollY),
+        savedAt: Date.now(),
+      }),
+    );
+  } catch {
+    // Storage full or blocked. Resuming is a nicety, so this is not worth surfacing.
+  }
+}
+
 /** Where to send people once booking is already open. */
 const IRCTC_URL = 'https://www.irctc.co.in/';
 
@@ -536,6 +579,18 @@ function bindControls(handle: PlayerHandle): void {
   document.getElementById('btn-next')?.addEventListener('click', () => handle.next());
   document.getElementById('btn-prev')?.addEventListener('click', () => handle.previous());
 
+  /*
+   * Snapshot the position so a discarded tab can pick up where it was. Saved on
+   * a slow interval, and again the moment the page hides, which is the case that
+   * actually matters: a screen lock is exactly when the tab is about to be
+   * discarded, and there is no later opportunity to write.
+   */
+  window.setInterval(() => saveSession(handle), 5_000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) saveSession(handle);
+  });
+  window.addEventListener('pagehide', () => saveSession(handle));
+
   trackEl?.addEventListener('click', (event) => {
     const rect = trackEl.getBoundingClientRect();
     if (rect.width === 0) return;
@@ -553,10 +608,21 @@ function bindControls(handle: PlayerHandle): void {
 
 const gate = document.getElementById('gate');
 
+// Returning after a lock should read as continuing, not starting over.
+if (restored) {
+  const hint = document.getElementById('gate-hint');
+  if (hint) hint.textContent = 'जारी रखने के लिए स्पर्श करें · tap to continue';
+}
+
 gate?.addEventListener(
   'click',
   async () => {
     gate.hidden = true;
+
+    // Put the reader back where they were before the tab was discarded.
+    if (restored) {
+      window.scrollTo({ top: restored.scrollY, behavior: 'instant' });
+    }
 
     // The journey has started, so begin counting idle time from here.
     armAutoScroll();
@@ -568,6 +634,9 @@ gate?.addEventListener(
       const handle = await createPlayer({
         mount,
         tracks: TRACKS,
+        resume: restored
+          ? { videoId: restored.videoId, seconds: resumePoint(restored.elapsed) }
+          : null,
         onTrackChange: showTrack,
         onPlayingChange: (playing) => {
           bar?.classList.toggle('is-paused', !playing);

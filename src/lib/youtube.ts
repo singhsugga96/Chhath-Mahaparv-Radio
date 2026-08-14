@@ -36,6 +36,11 @@ export interface PlayerOptions {
   onPlayingChange: (playing: boolean) => void;
   /** Called when no track in the rotation can be played. */
   onUnavailable: () => void;
+  /**
+   * Where to pick up, when returning to a discarded tab. Ignored if the video is
+   * no longer in the rotation.
+   */
+  resume?: { videoId: string; seconds: number } | null;
 }
 
 /**
@@ -86,7 +91,7 @@ function loadApi(): Promise<void> {
  * @throws If the IFrame API script cannot be loaded.
  */
 export async function createPlayer(options: PlayerOptions): Promise<PlayerHandle> {
-  const { mount, tracks, onTrackChange, onPlayingChange, onUnavailable } = options;
+  const { mount, tracks, onTrackChange, onPlayingChange, onUnavailable, resume } = options;
 
   await loadApi();
 
@@ -124,6 +129,18 @@ export async function createPlayer(options: PlayerOptions): Promise<PlayerHandle
 
   const advance = (): void => step(1);
 
+  /*
+   * Start on the track the listener was on, if it is still in the rotation.
+   * Shuffle order is left alone: only the starting index moves, so the rest of
+   * the sitting continues in a fresh order.
+   */
+  if (resume) {
+    const resumeIndex = order.findIndex((t) => t.videoId === resume.videoId);
+    if (resumeIndex !== -1) index = resumeIndex;
+  }
+  const resumeSeconds =
+    resume && order[index]?.videoId === resume.videoId ? Math.max(0, resume.seconds) : 0;
+
   const first = currentTrack();
   if (!first) {
     onUnavailable();
@@ -154,6 +171,7 @@ export async function createPlayer(options: PlayerOptions): Promise<PlayerHandle
     events: {
       onReady: () => {
         onTrackChange(first);
+        if (resumeSeconds > 0) player.seekTo(resumeSeconds, true);
         player.playVideo();
       },
       onStateChange: (event: { data: number }) => {

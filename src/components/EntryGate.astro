@@ -14,6 +14,10 @@ import { BRAND, BRAND_HI } from '../lib/brand';
   <span>
     <span class="gate__title">{BRAND_HI}</span>
     <span class="gate__brand">{BRAND}</span>
-    <p class="gate__hint">शुरू करने के लिए स्पर्श करें · tap to begin</p>
+    <!--
+      boot.ts rewrites this when a previous session is found, so returning after
+      a screen lock reads as continuing rather than starting over.
+    -->
+    <p class="gate__hint" id="gate-hint">शुरू करने के लिए स्पर्श करें · tap to begin</p>
   </span>
 </button>
