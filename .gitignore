@@ -4,3 +4,6 @@ dist/
 .DS_Store
 .idea/
 .vscode/
+
+# Design spec stays local rather than published with the code.
+docs/specs/
