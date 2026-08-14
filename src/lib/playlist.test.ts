@@ -31,8 +31,21 @@ describe('PLAYLIST_URL', () => {
 });
 
 describe('TRACKS', () => {
-  it('holds the 14 verified tracks from the Chhath Puja Radio playlist', () => {
-    expect(TRACKS).toHaveLength(14);
+  it('holds the 10 verified tracks from the Chhath Mahaparv Radio playlist', () => {
+    expect(TRACKS).toHaveLength(10);
+  });
+
+  /*
+   * Two of these ids begin with a hyphen. Anywhere an id is validated or built
+   * into a URL, that has to survive: a pattern missing the hyphen would silently
+   * drop those tracks.
+   */
+  it('keeps ids that begin with a hyphen', () => {
+    const hyphenated = TRACKS.filter((t) => t.videoId.startsWith('-'));
+    expect(hyphenated.length).toBeGreaterThan(0);
+    for (const t of hyphenated) {
+      expect(t.videoId).toMatch(/^[A-Za-z0-9_-]{11}$/);
+    }
   });
 
   it('has no duplicate video ids', () => {
