@@ -21,9 +21,11 @@
 </div>
 
 <!--
-  Starts in the paused state on purpose: if autoplay is refused despite the
-  gate's gesture, the button correctly reads "play" instead of claiming to be
-  playing. onPlayingChange clears it the moment playback actually begins.
+  Starts in the paused state on purpose. There is no entry screen, so nothing has
+  granted a gesture yet and audio cannot begin on load. The button therefore
+  reads "play" rather than claiming to be playing, and is the visible fallback
+  for anyone whose first interaction is a mouse wheel, which does not count as
+  activation. onPlayingChange clears it the moment playback actually begins.
 -->
 <section class="player is-paused" aria-label="Now playing">
   <div class="player__cover" id="player-cover">

@@ -207,10 +207,10 @@ function createAutoScroll(): () => void {
   let position = 0;
   let running = false;
   /*
-   * Nothing may arm the idle timer until the reader has actually started the
-   * journey by dismissing the gate. Without this, the visibilitychange handler
-   * below arms it on page load, and the page can start scrolling itself behind
-   * the entry veil before anyone has pressed anything.
+   * Nothing may arm the idle timer until the page has explicitly started it.
+   * Without this the visibilitychange handler below arms it during setup, which
+   * previously meant the page could scroll itself before the reader had done
+   * anything at all.
    */
   let started = false;
 
@@ -601,51 +601,63 @@ function bindControls(handle: PlayerHandle): void {
   window.setInterval(() => showProgress(handle), 500);
 }
 
-const gate = document.getElementById('gate');
+/**
+ * Starts playback on the first real interaction anywhere on the page.
+ *
+ * There is no entry screen any more, and browsers will not start audio without a
+ * user gesture, so the gesture is taken from whatever the reader does first.
+ * Scrolling with a mouse wheel does not count as activation, which is why the
+ * player bar still shows a play button: that is the fallback for anyone who
+ * never taps.
+ *
+ * @param handle The live player.
+ */
+function playOnFirstGesture(handle: PlayerHandle): void {
+  const types = ['pointerdown', 'keydown', 'touchstart'] as const;
 
-// Returning after a lock should read as continuing, not starting over.
-if (restored) {
-  const hint = document.getElementById('gate-hint');
-  if (hint) hint.textContent = 'जारी रखने के लिए स्पर्श करें · tap to continue';
+  const start = (): void => {
+    for (const type of types) window.removeEventListener(type, start);
+    handle.play();
+  };
+
+  for (const type of types) {
+    window.addEventListener(type, start, { passive: true });
+  }
 }
 
-gate?.addEventListener(
-  'click',
-  async () => {
-    gate.hidden = true;
+// Put the reader back where they were before the tab was discarded.
+if (restored) {
+  window.scrollTo({ top: restored.scrollY, behavior: 'instant' });
+}
 
-    // Put the reader back where they were before the tab was discarded.
-    if (restored) {
-      window.scrollTo({ top: restored.scrollY, behavior: 'instant' });
-    }
+// Nothing to wait for now, so the idle countdown starts with the page.
+armAutoScroll();
 
-    // The journey has started, so begin counting idle time from here.
-    armAutoScroll();
+void (async () => {
+  const mount = document.getElementById('player-mount');
+  if (!mount) return;
 
-    const mount = document.getElementById('player-mount');
-    if (!mount) return;
+  try {
+    const handle = await createPlayer({
+      mount,
+      tracks: TRACKS,
+      resume: restored
+        ? { videoId: restored.videoId, seconds: resumePoint(restored.elapsed) }
+        : null,
+      onTrackChange: showTrack,
+      onPlayingChange: (playing) => {
+        bar?.classList.toggle('is-paused', !playing);
+        document
+          .getElementById('btn-toggle')
+          ?.setAttribute('aria-label', playing ? 'Pause' : 'Play');
+      },
+      onUnavailable: showUnavailable,
+    });
 
-    try {
-      const handle = await createPlayer({
-        mount,
-        tracks: TRACKS,
-        resume: restored
-          ? { videoId: restored.videoId, seconds: resumePoint(restored.elapsed) }
-          : null,
-        onTrackChange: showTrack,
-        onPlayingChange: (playing) => {
-          bar?.classList.toggle('is-paused', !playing);
-          document
-            .getElementById('btn-toggle')
-            ?.setAttribute('aria-label', playing ? 'Pause' : 'Play');
-        },
-        onUnavailable: showUnavailable,
-      });
-      bindControls(handle);
-    } catch {
-      // The API script itself failed — offline, blocked, or filtered.
-      showUnavailable();
-    }
-  },
-  { once: true },
-);
+    bindControls(handle);
+    playOnFirstGesture(handle);
+  } catch {
+    // The API script itself failed: offline, blocked, or filtered.
+    showUnavailable();
+  }
+})();

@@ -57,7 +57,9 @@ export const SECTIONS: readonly RitualSection[] = [
   {
     id: 'intro',
     titleHi: 'छठ पूजा',
-    titleEn: 'Chhath Puja',
+    // The site's wordmark. It used to sit on the entry screen; with that gone,
+    // the opening section is the only place the brand appears.
+    titleEn: 'Chhath Mahaparv Radio',
     bodyHi: 'चार दिन का पर्व, जिसमें सूरज को अर्घ्य दिया जाता है।',
     bodyEn:
       'Four days of prayer to the sun. Scroll down and the sky moves with you, from this early hour before dawn all the way to the sunrise that ends the fast.',
